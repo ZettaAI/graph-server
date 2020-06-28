@@ -11,6 +11,7 @@ from .middleware import ResponseTimeHeader
 from .segmentation import api as segmentation_api
 
 
+# TODO add tests and configure CI/CD
 app = FastAPI()
 
 origins = ["*"]

@@ -1,2 +1,1 @@
 fastapi
-git+https://github.com/ZettaAI/PyChunkedGraph.git@akhilesh-unit-tests
