@@ -26,9 +26,10 @@ async def root(
     stop_layer: Optional[int] = None,
     int64_as_str: Optional[bool] = True,
 ):
-    timestamp = datetime.fromtimestamp(timestamp, UTC)
     root = get_cg(graph_id).get_root(
-        node_id, stop_layer=stop_layer, time_stamp=timestamp
+        node_id,
+        stop_layer=stop_layer,
+        time_stamp=datetime.fromtimestamp(timestamp, UTC),
     )
 
     if int64_as_str:
@@ -65,10 +66,11 @@ async def roots_binary(
 ):
     from numpy import frombuffer
 
-    timestamp = datetime.fromtimestamp(timestamp, UTC)
     node_ids = frombuffer(request.body, uint64)
     roots = get_cg(graph_id).get_roots(
-        node_ids, stop_layer=stop_layer, time_stamp=timestamp
+        node_ids,
+        stop_layer=stop_layer,
+        time_stamp=datetime.fromtimestamp(timestamp, UTC),
     )
     return roots.tobytes()
 
