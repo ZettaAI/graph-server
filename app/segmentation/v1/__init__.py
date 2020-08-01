@@ -4,7 +4,6 @@ import json
 from time import time
 from datetime import datetime
 
-
 from pytz import UTC
 from numpy import array
 from numpy import uint64
@@ -14,6 +13,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 
 from ...utils import get_cg
+from ...utils import string_array
 
 api = FastAPI()
 
@@ -51,7 +51,7 @@ async def roots(
     )
 
     if int64_as_str:
-        return {"root_ids": [str(x) for x in roots]}
+        return {"root_ids": string_array(roots)}
     return {"root_ids": roots}
 
 
@@ -73,22 +73,6 @@ async def roots_binary(
     return roots.tobytes()
 
 
-@api.get("/table/{graph_id}/node/{node_id}/leaves")
-async def leaves(
-    graph_id: str,
-    node_id: int,
-    bounds: Optional[str] = "",
-    int64_as_str: Optional[bool] = True,
-):
-    bbox = None
-    if bounds:
-        bbox = array([b.split("-") for b in bounds.split("_")], dtype=int).T
-    leaves = get_cg(graph_id).get_subgraph(
-        node_id, bbox=bbox, bbox_is_coordinate=True, leaves_only=True
-    )
-    return {"leaf_ids": [str(x) for x in leaves]}
-
-
 @api.post("/table/{graph_id}/node/{node_id}/children")
 async def children(
     graph_id: str, node_id: int, int64_as_str: Optional[bool] = True,
@@ -99,6 +83,6 @@ async def children(
     if cg.get_chunk_layer(node_id) > 1:
         children = cg.get_children(node_id)
     if int64_as_str:
-        return {"root_ids": [str(x) for x in children]}
+        return {"root_ids": string_array(children)}
     return {"root_ids": children}
 

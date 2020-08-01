@@ -1,39 +1,47 @@
-# ### GET L2:SV MAPPINGS OF A L2 CHUNK ------------------------------------------------------------------
+"""
+Leaves and edges between them of a `node_id` within a bounding box (optional).
+"""
 
-# @bp.route("/table/<table_id>/l2_chunk_children/<chunk_id>", methods=["GET"])
-# @auth_requires_permission("view")
-# def handle_l2_chunk_children(table_id, chunk_id):
-#     int64_as_str = request.args.get("int64_as_str", default=False, type=toboolean)
-#     as_array = request.args.get("as_array", default=False, type=toboolean)
-#     l2_chunk_children = common.handle_l2_chunk_children(table_id, chunk_id, as_array)
-#     if as_array:
-#         resp = {"l2_chunk_children": l2_chunk_children}
-#     else:
-#         resp = {"l2_chunk_children": pickle.dumps(l2_chunk_children)}
-#     return jsonify_with_kwargs(resp, int64_as_str=int64_as_str)
+from typing import Optional
+
+from numpy import array
+
+from . import api
+from . import get_cg
+from . import string_array
 
 
-# ### GET L2:SV MAPPINGS OF A L2 CHUNK BINARY ------------------------------------------------------------------
+@api.get("/table/{graph_id}/node/{node_id}/subgraph")
+async def subgraph(
+    graph_id: str,
+    node_id: int,
+    bounds: Optional[str] = "",
+    int64_as_str: Optional[bool] = True,
+):
+    bbox = None
+    if bounds:
+        bbox = array([b.split("-") for b in bounds.split("_")], dtype=int).T
+    atomic_edges = get_cg(graph_id).get_subgraph(
+        node_id, bbox=bbox, bbox_is_coordinate=True
+    )
+    if int64_as_str:
+        return {"atomic_edges": string_array(atomic_edges)}
+    return {"atomic_edges": atomic_edges}
 
-# @bp.route("/table/<table_id>/l2_chunk_children_binary/<chunk_id>", methods=["GET"])
-# @auth_requires_permission("view")
-# def handle_l2_chunk_children_binary(table_id, chunk_id):
-#     as_array = request.args.get("as_array", default=False, type=toboolean)
-#     l2_chunk_children = common.handle_l2_chunk_children(table_id, chunk_id, as_array)
-#     if as_array:
-#         return tobinary(l2_chunk_children)
-#     else:
-#         return pickle.dumps(l2_chunk_children)
 
-
-
-# ### SUBGRAPH -------------------------------------------------------------------
-
-
-# @bp.route("/table/<table_id>/node/<node_id>/subgraph", methods=["GET"])
-# @auth_requires_permission("view")
-# def handle_subgraph(table_id, node_id):
-#     int64_as_str = request.args.get("int64_as_str", default=False, type=toboolean)
-#     subgraph_result = common.handle_subgraph(table_id, node_id)
-#     resp = {"atomic_edges": subgraph_result}
-#     return jsonify_with_kwargs(resp, int64_as_str=int64_as_str)
+@api.get("/table/{graph_id}/node/{node_id}/leaves")
+async def leaves(
+    graph_id: str,
+    node_id: int,
+    bounds: Optional[str] = "",
+    int64_as_str: Optional[bool] = True,
+):
+    bbox = None
+    if bounds:
+        bbox = array([b.split("-") for b in bounds.split("_")], dtype=int).T
+    leaves = get_cg(graph_id).get_subgraph(
+        node_id, bbox=bbox, bbox_is_coordinate=True, leaves_only=True
+    )
+    if int64_as_str:
+        return {"leaf_ids": string_array(leaves)}
+    return {"leaf_ids": leaves}
