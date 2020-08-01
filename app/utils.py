@@ -4,7 +4,7 @@ from pychunkedgraph.graph import ChunkedGraph
 CACHE = {}
 
 
-def get_cg(graph_id):
+def get_cg(graph_id: str) -> ChunkedGraph:
     try:
         return CACHE[graph_id]
     except KeyError:
@@ -13,7 +13,7 @@ def get_cg(graph_id):
     return CACHE[graph_id]
 
 
-async def get_info(graph_id):
+async def get_info(graph_id: str) -> dict:
     cg = get_cg(graph_id)
     dataset_info = cg.meta.dataset_info
     app_info = {"app": {"supported_api_versions": [0, 1]}}

@@ -6,7 +6,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 class AuthMiddleare(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        # TODO add auth logic
+        # TODO auth middleware here or traefik?
         response = await call_next(request)
         return response
 
