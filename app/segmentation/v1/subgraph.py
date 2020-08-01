@@ -1,5 +1,5 @@
 """
-Leaves and edges between them of a `node_id` within a bounding box (optional).
+Leaves and edges of an agglomeration, within (optional) bounding box.
 """
 
 from typing import Optional

@@ -2,21 +2,27 @@ from typing import Iterable
 
 from pychunkedgraph.graph import ChunkedGraph
 
-
 CACHE = {}
 
 
-# def get_bigtable_client(config):
-#     project_id = config.get("PROJECT_ID", None)
-#     if config.get("emulate", False):
-#         credentials = DoNothingCreds()
-#     elif project_id is not None:
-#         credentials, _ = default_creds()
-#     else:
-#         credentials, project_id = default_creds()
+def _get_bigtable_client_info():
+    from os import environ
+    from pychunkedgraph.graph.meta import BigTableConfig
 
-#     client = bigtable.Client(admin=True, project=project_id, credentials=credentials)
-#     return client
+    kwargs = {
+        "PROJECT": environ.get("BIGTABLE_PROJECT", "zetta-lee-fly-vnc-001"),
+        "INSTANCE": environ.get("BIGTABLE_INSTANCE", "zetta-lee-fly-vnc-graph-test"),
+        "ADMIN": False,  # TODO make these dynamic (low-priority)
+        "READ_ONLY": False,
+    }
+    return BigTableConfig(**kwargs)
+
+
+def _get_cg_backend_client_info():
+    from pychunkedgraph.graph.meta import BackendClientInfo
+
+    # only BigTable is supported at this time.
+    return BackendClientInfo(TYPE="bigtable", CONFIG=_get_bigtable_client_info())
 
 
 def get_cg(graph_id: str) -> ChunkedGraph:
@@ -24,17 +30,19 @@ def get_cg(graph_id: str) -> ChunkedGraph:
         return CACHE[graph_id]
     except KeyError:
         pass
-    CACHE[graph_id] = ChunkedGraph(graph_id=graph_id)
+    CACHE[graph_id] = ChunkedGraph(
+        graph_id=graph_id, client_info=_get_cg_backend_client_info()
+    )
     return CACHE[graph_id]
 
 
 async def get_info(graph_id: str) -> dict:
+    # this is currently is a hack to match legacy APIs
     cg = get_cg(graph_id)
     dataset_info = cg.meta.dataset_info
     app_info = {"app": {"supported_api_versions": [0, 1]}}
     info = {**dataset_info, **app_info}
     info["sharded_mesh"] = True
-    info["verify_mesh"] = cg.meta.custom_data.get("mesh", {}).get("verify", False)
     info["mesh"] = cg.meta.custom_data.get("mesh", {}).get("dir", "graphene_meshes")
     return info
 
