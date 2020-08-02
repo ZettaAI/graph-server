@@ -1,6 +1,5 @@
 from typing import Optional
 from typing import Iterable
-import json
 from time import time
 from datetime import datetime
 
@@ -10,7 +9,6 @@ from numpy import uint64
 from fastapi import Body
 from fastapi import FastAPI
 from fastapi import Request
-from fastapi.responses import JSONResponse
 
 from ...utils import get_cg
 from ...utils import string_array
@@ -60,7 +58,6 @@ async def roots(
 async def roots_binary(
     request: Request,
     graph_id: str,
-    node_id: int,
     stop_layer: Optional[int] = None,
     timestamp: Optional[float] = time(),
 ):
