@@ -37,7 +37,6 @@ def get_cg(graph_id: str) -> ChunkedGraph:
 
 
 async def get_info(graph_id: str) -> dict:
-    # this is currently is a hack to match legacy APIs
     cg = get_cg(graph_id)
     dataset_info = cg.meta.dataset_info
     app_info = {"app": {"supported_api_versions": [0, 1]}}
@@ -51,3 +50,23 @@ def string_array(a: Iterable) -> Iterable:
     from numpy import char
 
     return char.mod("%d", a).tolist()
+
+
+def toboolean(value):
+    """ Parse value to boolean type. """
+    if not value:
+        raise ValueError("Can't convert null to boolean")
+
+    if isinstance(value, bool):
+        return value
+    try:
+        value = value.lower()
+    except:
+        raise ValueError(f"Can't convert {value} to boolean")
+
+    if value in ("true", "1"):
+        return True
+    if value in ("false", "0"):
+        return False
+
+    raise ValueError(f"Can't convert {value} to boolean")

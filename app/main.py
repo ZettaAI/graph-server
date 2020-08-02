@@ -1,12 +1,6 @@
-from time import time
-
 from fastapi import FastAPI
-from fastapi import Request
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from .utils import get_cg
-from .utils import get_info
 from .middleware import ResponseTimeHeader
 from .segmentation import api as segmentation_api
 
