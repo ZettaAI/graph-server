@@ -35,11 +35,11 @@ def _process_split_request_nodes(cg: ChunkedGraph, data: dict) -> dict:
     return result
 
 
-def merge_helper(cg: ChunkedGraph, request: Request):
+async def merge_helper(cg: ChunkedGraph, request: Request):
     from numpy import all
     from numpy import abs
 
-    nodes = loads(request.body)
+    nodes = loads(await request.body())
     assert len(nodes) == 2, "Only 2 points can be merged at this time."
 
     atomic_edge, coords = _process_node_info(cg, nodes)
@@ -70,10 +70,10 @@ def merge_helper(cg: ChunkedGraph, request: Request):
     return ret
 
 
-def split_helper(cg: ChunkedGraph, request: Request):
+async def split_helper(cg: ChunkedGraph, request: Request):
     from collections import defaultdict
 
-    data_dict = _process_split_request_nodes(cg, loads(request.body))
+    data_dict = _process_split_request_nodes(cg, loads(await request.body()))
     try:
         ret = cg.remove_edges(
             user_id=request.client,
@@ -98,14 +98,14 @@ def split_helper(cg: ChunkedGraph, request: Request):
     return ret
 
 
-def split_preview_helper(
+async def split_preview_helper(
     cg: ChunkedGraph, request: Request, int64_as_str: bool = False
 ):
     from collections import defaultdict
     from pychunkedgraph.graph.cutting import run_split_preview
     from . import string_array
 
-    data_dict = _process_split_request_nodes(cg, loads(request.body))
+    data_dict = _process_split_request_nodes(cg, loads(await request.body()))
     try:
         supervoxel_ccs, illegal_split = run_split_preview(
             cg=cg,
@@ -129,8 +129,8 @@ def split_preview_helper(
     }
 
 
-def undo_helper(cg: ChunkedGraph, request: Request):
-    operation_id = uint64(loads(request.body)["operation_id"])
+async def undo_helper(cg: ChunkedGraph, request: Request):
+    operation_id = uint64(loads(await request.body())["operation_id"])
     try:
         ret = cg.undo(user_id=request.client, operation_id=operation_id)
     except exceptions.LockingError as e:
@@ -146,8 +146,8 @@ def undo_helper(cg: ChunkedGraph, request: Request):
     return ret
 
 
-def redo_helper(cg: ChunkedGraph, request: Request):
-    operation_id = uint64(loads(request.body)["operation_id"])
+async def redo_helper(cg: ChunkedGraph, request: Request):
+    operation_id = uint64(loads(await request.body())["operation_id"])
     try:
         ret = cg.redo(user_id=request.client, operation_id=operation_id)
     except exceptions.LockingError as e:

@@ -10,10 +10,16 @@ from fastapi import Body
 from fastapi import FastAPI
 from fastapi import Request
 
+from .edits import router as edits_router
+from .chunks import router as chunks_router
+from .subgraph import router as subgraph_router
 from ...utils import get_cg
 from ...utils import string_array
 
 api = FastAPI()
+api.include_router(edits_router)
+api.include_router(chunks_router)
+api.include_router(subgraph_router)
 
 
 @api.get("/table/{graph_id}/node/{node_id}/root")
@@ -63,7 +69,7 @@ async def roots_binary(
 ):
     from numpy import frombuffer
 
-    node_ids = frombuffer(request.body, uint64)
+    node_ids = frombuffer(await request.body(), uint64)
     roots = get_cg(graph_id).get_roots(
         node_ids,
         stop_layer=stop_layer,

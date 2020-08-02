@@ -35,6 +35,7 @@ def manifest_response(cg: ChunkedGraph, args: tuple):
             resp["fragments"] = [
                 f"~{i}:{f}" for i, f in zip(seg_ids, resp["fragments"])
             ]
+        seg_ids = seg_ids.tolist()
     if return_seg_ids:
         resp["seg_ids"] = seg_ids
     return _check_post_options(cg, resp, data, seg_ids)

@@ -12,20 +12,21 @@ async def manifest(
     graph_id: str,
     node_id: int,
     verify: Optional[bool] = True,
-    return_seg_ids: Optional[bool] = True,
-    prepend_seg_ids: Optional[bool] = True,
+    return_seg_ids: Optional[bool] = False,
+    prepend_seg_ids: Optional[bool] = False,
     bounds: Optional[str] = "",
 ):
     from json import loads
+    from json.decoder import JSONDecodeError
     from numpy import array
     from numpy import uint64
     from .utils import manifest_response
     from ..utils import get_cg
 
-    data = {}
-    if len(request.body) > 0:
-        data = loads(request.data)
-
+    try:
+        data = loads(await request.body())
+    except JSONDecodeError:
+        data = {}
     bbox = None
     if bounds:
         bbox = array([b.split("-") for b in bounds.split("_")], dtype=int).T

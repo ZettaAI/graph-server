@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .middleware import ResponseTimeHeader
+from .meshing import api as meshing_api
 from .segmentation import api as segmentation_api
 
 
@@ -20,4 +21,5 @@ app.add_middleware(
 app.add_middleware(ResponseTimeHeader)
 
 
+app.mount("/meshing", meshing_api)
 app.mount("/segmentation", segmentation_api)

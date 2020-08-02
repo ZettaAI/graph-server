@@ -5,13 +5,17 @@ Leaves and edges of an agglomeration, within (optional) bounding box.
 from typing import Optional
 
 from numpy import array
-
-from . import api
-from . import get_cg
-from . import string_array
+from fastapi import APIRouter
 
 
-@api.get("/table/{graph_id}/node/{node_id}/subgraph")
+from ...utils import get_cg
+from ...utils import string_array
+
+
+router = APIRouter()
+
+
+@router.get("/table/{graph_id}/node/{node_id}/subgraph")
 async def subgraph(
     graph_id: str,
     node_id: int,
@@ -29,7 +33,7 @@ async def subgraph(
     return {"atomic_edges": atomic_edges}
 
 
-@api.get("/table/{graph_id}/node/{node_id}/leaves")
+@router.get("/table/{graph_id}/node/{node_id}/leaves")
 async def leaves(
     graph_id: str,
     node_id: int,
