@@ -24,7 +24,7 @@ async def root(
     node_id: int,
     timestamp: Optional[float] = time(),
     stop_layer: Optional[int] = None,
-    int64_as_str: Optional[bool] = True,
+    int64_as_str: Optional[bool] = False,
 ):
     root = get_cg(graph_id).get_root(
         node_id,
@@ -43,7 +43,7 @@ async def roots(
     node_ids: Iterable[int] = Body(...),
     stop_layer: Optional[int] = None,
     timestamp: Optional[float] = time(),
-    int64_as_str: Optional[bool] = True,
+    int64_as_str: Optional[bool] = False,
 ):
     roots = get_cg(graph_id).get_roots(
         array(node_ids, dtype=uint64),
@@ -77,7 +77,7 @@ async def roots_binary(
 
 @api.post("/table/{graph_id}/node/{node_id}/children")
 async def children(
-    graph_id: str, node_id: int, int64_as_str: Optional[bool] = True,
+    graph_id: str, node_id: int, int64_as_str: Optional[bool] = False,
 ):
     cg = get_cg(graph_id)
     node_id = uint64(node_id)

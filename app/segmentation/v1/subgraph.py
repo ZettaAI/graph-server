@@ -16,7 +16,7 @@ async def subgraph(
     graph_id: str,
     node_id: int,
     bounds: Optional[str] = "",
-    int64_as_str: Optional[bool] = True,
+    int64_as_str: Optional[bool] = False,
 ):
     bbox = None
     if bounds:
@@ -34,7 +34,7 @@ async def leaves(
     graph_id: str,
     node_id: int,
     bounds: Optional[str] = "",
-    int64_as_str: Optional[bool] = True,
+    int64_as_str: Optional[bool] = False,
 ):
     bbox = None
     if bounds:

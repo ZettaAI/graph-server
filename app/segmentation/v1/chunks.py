@@ -1,13 +1,21 @@
+from typing import Union
+from typing import Optional
+from time import time
 from datetime import datetime
 
-from pychunkedgraph.graph.attributes import Hierarchy
+from pytz import UTC
+from numpy import ndarray
+
+from . import api
+from . import string_array
 
 
 def _l2_chunk_children(
     graph_id: int, chunk_id: int, timestamp: datetime, flatten: bool = False
-):
+) -> Union[ndarray, dict]:
     from numpy import array
     from numpy import uint64
+    from pychunkedgraph.graph.attributes import Hierarchy
     from . import get_cg
 
     cg = get_cg(graph_id)
@@ -33,30 +41,45 @@ def _l2_chunk_children(
         return l2_chunk_dict
 
 
-# @bp.route("/table/<table_id>/l2_chunk_children/<chunk_id>", methods=["GET"])
-# @auth_requires_permission("view")
-# def handle_l2_chunk_children(table_id, chunk_id):
-#     timestamp = datetime.fromtimestamp(timestamp, UTC)
-#     int64_as_str = request.args.get("int64_as_str", default=False, type=toboolean)
-#     as_array = request.args.get("as_array", default=False, type=toboolean)
-#     l2_chunk_children = common.handle_l2_chunk_children(table_id, chunk_id, as_array)
-#     if as_array:
-#         resp = {"l2_chunk_children": l2_chunk_children}
-#     else:
-#         resp = {"l2_chunk_children": pickle.dumps(l2_chunk_children)}
-#     return jsonify_with_kwargs(resp, int64_as_str=int64_as_str)
+@api.get("/table/{graph_id}/l2_chunk_children/{chunk_id}")
+async def l2_chunk_children(
+    graph_id: str,
+    chunk_id: int,
+    timestamp: Optional[float] = time(),
+    int64_as_str: Optional[bool] = False,
+    as_array: Optional[bool] = False,
+):
+    from pickle import dumps
+
+    children = _l2_chunk_children(
+        graph_id,
+        chunk_id,
+        timestamp=datetime.fromtimestamp(timestamp, UTC),
+        flatten=as_array,
+    )
+    if as_array:
+        if int64_as_str:
+            return {"l2_chunk_children": string_array(children)}
+        return {"l2_chunk_children": children}
+    return {"l2_chunk_children": dumps(children)}
 
 
-# ### GET L2:SV MAPPINGS OF A L2 CHUNK BINARY ------------------------------------------------------------------
+@api.get("/table/{graph_id}/l2_chunk_children_binary/{chunk_id}")
+async def l2_chunk_children_binary(
+    graph_id: str,
+    chunk_id: int,
+    timestamp: Optional[float] = time(),
+    as_array: Optional[bool] = False,
+):
+    from pickle import dumps
 
-# @bp.route("/table/<table_id>/l2_chunk_children_binary/<chunk_id>", methods=["GET"])
-# @auth_requires_permission("view")
-# def handle_l2_chunk_children_binary(table_id, chunk_id):
-#     timestamp = datetime.fromtimestamp(timestamp, UTC)
-#     as_array = request.args.get("as_array", default=False, type=toboolean)
-#     l2_chunk_children = common.handle_l2_chunk_children(table_id, chunk_id, as_array)
-#     if as_array:
-#         return tobinary(l2_chunk_children)
-#     else:
-#         return pickle.dumps(l2_chunk_children)
+    children = _l2_chunk_children(
+        graph_id,
+        chunk_id,
+        timestamp=datetime.fromtimestamp(timestamp, UTC),
+        flatten=as_array,
+    )
+    if as_array:
+        return children.tobytes()
+    return dumps(children)
 
