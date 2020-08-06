@@ -1,2 +1,2 @@
 dracopy
-git+https://github.com/seung-lab/PyChunkedGraph.git@akhilesh-unit-tests
+git+https://github.com/seung-lab/PyChunkedGraph.git@akhilesh-log-export

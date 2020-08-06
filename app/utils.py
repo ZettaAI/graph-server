@@ -5,33 +5,15 @@ from pychunkedgraph.graph import ChunkedGraph
 CACHE = {}
 
 
-def _get_bigtable_client_info():
-    from os import environ
-    from pychunkedgraph.graph.meta import BigTableConfig
-
-    kwargs = {
-        "PROJECT": environ.get("BIGTABLE_PROJECT", "zetta-lee-fly-vnc-001"),
-        "INSTANCE": environ.get("BIGTABLE_INSTANCE", "zetta-lee-fly-vnc-graph-test"),
-        "ADMIN": False,  # TODO make these dynamic (low-priority)
-        "READ_ONLY": False,
-    }
-    return BigTableConfig(**kwargs)
-
-
-def _get_cg_backend_client_info():
-    from pychunkedgraph.graph.meta import BackendClientInfo
-
-    # only BigTable is supported at this time.
-    return BackendClientInfo(TYPE="bigtable", CONFIG=_get_bigtable_client_info())
-
-
 def get_cg(graph_id: str) -> ChunkedGraph:
+    from pychunkedgraph.graph.client import get_default_client_info
+
     try:
         return CACHE[graph_id]
     except KeyError:
         pass
     CACHE[graph_id] = ChunkedGraph(
-        graph_id=graph_id, client_info=_get_cg_backend_client_info()
+        graph_id=graph_id, client_info=get_default_client_info()
     )
     return CACHE[graph_id]
 
