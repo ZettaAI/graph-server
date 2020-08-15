@@ -52,3 +52,17 @@ async def manifest(
     )
     return manifest_response(cg, args)
 
+
+@api.post("/table/{graph_id}/remesh")
+async def remesh(request: Request, graph_id: str):
+    from json import loads
+    from numpy import array
+    from numpy import uint64
+    from .utils import remesh
+    from ..utils import get_cg
+
+    data = loads(await request.body())
+    return remesh(
+        get_cg(graph_id), data["operation_id"], array(data["l2ids"], dtype=uint64)
+    )
+

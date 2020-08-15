@@ -23,6 +23,7 @@ async def get_info(graph_id: str) -> dict:
     dataset_info = cg.meta.dataset_info
     app_info = {"app": {"supported_api_versions": [0, 1]}}
     info = {**dataset_info, **app_info}
+    info["graph"]["chunk_size"] = [2048, 1024, 128]
     info["sharded_mesh"] = True
     info["mesh"] = cg.meta.custom_data.get("mesh", {}).get("dir", "graphene_meshes")
     return info

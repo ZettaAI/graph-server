@@ -35,7 +35,28 @@ def _process_split_request_nodes(cg: ChunkedGraph, data: dict) -> dict:
     return result
 
 
+async def _remesh(graph_id: str, operation_id: int, l2ids: Iterable) -> None:
+    from os import environ
+    from json import dumps
+    from requests import post
+    from requests.exceptions import ReadTimeout
+
+    remesh_svc = environ.get("REMESH_SERVICE", "http://localhost:1000")
+
+    try:
+        # trigger re-mesh task, no need to wait for response
+        post(
+            f"{remesh_svc}/meshing/api/v1/table/{graph_id}/remesh",
+            data=dumps({"operation_id": int(operation_id), "l2ids": l2ids}),
+            timeout=0.1,
+        )
+    except ReadTimeout:
+        pass
+
+
 async def merge_helper(cg: ChunkedGraph, request: Request):
+    # TODO delete
+    return await _remesh(cg.graph_id, 123, [0, 9, 8, 7, 6, 5, 4, 3, 2, 1])
     from numpy import all
     from numpy import abs
 
@@ -49,7 +70,7 @@ async def merge_helper(cg: ChunkedGraph, request: Request):
     assert all(abs(coord0 - coord1) < 4), "Chebyshev distance exceeded, max 3 chunks."
 
     try:
-        ret = cg.add_edges(
+        resp = cg.add_edges(
             user_id=request.client,
             atomic_edges=array(atomic_edge, dtype=uint64),
             source_coords=coords[:1],
@@ -60,22 +81,20 @@ async def merge_helper(cg: ChunkedGraph, request: Request):
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
 
-    assert ret.new_root_ids is not None, "Could not merge selected supervoxels."
-    # if len(ret.new_lvl2_ids) > 0:
-    #     # _remeshing(cg.get_serialized_info(), ret.new_lvl2_ids)
-    #     t = threading.Thread(
-    #         target=_remeshing, args=(cg.get_serialized_info(), ret.new_lvl2_ids)
-    #     )
-    #     t.start()
-    return ret
+    assert resp.new_root_ids is not None, "Could not merge selected supervoxels."
+    if len(resp.new_lvl2_ids):
+        _remesh(cg.graph_id, resp.operation_id, resp.new_lvl2_ids.tolist())
+    return resp
 
 
 async def split_helper(cg: ChunkedGraph, request: Request):
+    # TODO delete
+    return await _remesh(cg.graph_id, 321, [1, 2, 3, 4, 5, 7, 8, 9, 0])
     from collections import defaultdict
 
     data_dict = _process_split_request_nodes(cg, loads(await request.body()))
     try:
-        ret = cg.remove_edges(
+        resp = cg.remove_edges(
             user_id=request.client,
             source_ids=data_dict["sources"]["id"],
             sink_ids=data_dict["sinks"]["id"],
@@ -88,14 +107,10 @@ async def split_helper(cg: ChunkedGraph, request: Request):
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
 
-    assert ret.new_root_ids is not None, "Could not split selected segment groups."
-    # if len(ret.new_lvl2_ids) > 0:
-    #     # _remeshing(cg.get_serialized_info(), ret.new_lvl2_ids)
-    #     t = threading.Thread(
-    #         target=_remeshing, args=(cg.get_serialized_info(), ret.new_lvl2_ids)
-    #     )
-    #     t.start()
-    return ret
+    assert resp.new_root_ids is not None, "Could not split selected segment groups."
+    if len(resp.new_lvl2_ids):
+        _remesh(cg.graph_id, resp.operation_id, resp.new_lvl2_ids.tolist())
+    return resp
 
 
 async def split_preview_helper(
@@ -132,35 +147,27 @@ async def split_preview_helper(
 async def undo_helper(cg: ChunkedGraph, request: Request):
     operation_id = uint64(loads(await request.body())["operation_id"])
     try:
-        ret = cg.undo(user_id=request.client, operation_id=operation_id)
+        resp = cg.undo(user_id=request.client, operation_id=operation_id)
     except exceptions.LockingError as e:
         raise exceptions.InternalServerError(e)
     except (exceptions.PreconditionError, exceptions.PostconditionError) as e:
         raise exceptions.BadRequest(e)
-    # if ret.new_lvl2_ids.size > 0:
-    #     # _remeshing(cg.get_serialized_info(), ret.new_lvl2_ids)
-    #     t = threading.Thread(
-    #         target=_remeshing, args=(cg.get_serialized_info(), ret.new_lvl2_ids)
-    #     )
-    #     t.start()
-    return ret
+    if len(resp.new_lvl2_ids):
+        _remesh(cg.graph_id, resp.operation_id, resp.new_lvl2_ids.tolist())
+    return resp
 
 
 async def redo_helper(cg: ChunkedGraph, request: Request):
     operation_id = uint64(loads(await request.body())["operation_id"])
     try:
-        ret = cg.redo(user_id=request.client, operation_id=operation_id)
+        resp = cg.redo(user_id=request.client, operation_id=operation_id)
     except exceptions.LockingError as e:
         raise exceptions.InternalServerError(e)
     except (exceptions.PreconditionError, exceptions.PostconditionError) as e:
         raise exceptions.BadRequest(e)
-    # if ret.new_lvl2_ids.size > 0:
-    #     # _remeshing(cg.get_serialized_info(), ret.new_lvl2_ids)
-    #     t = threading.Thread(
-    #         target=_remeshing, args=(cg.get_serialized_info(), ret.new_lvl2_ids)
-    #     )
-    #     t.start()
-    return ret
+    if len(resp.new_lvl2_ids):
+        _remesh(cg.graph_id, resp.operation_id, resp.new_lvl2_ids.tolist())
+    return resp
 
 
 def format_edit_result(result, int64_as_str: bool):
