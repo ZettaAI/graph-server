@@ -1,1 +1,2 @@
 fastapi
+git+https://github.com/seung-lab/PyChunkedGraph.git@akhilesh-log-export

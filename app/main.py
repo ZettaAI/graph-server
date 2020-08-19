@@ -1,17 +1,14 @@
-from time import time
-
 from fastapi import FastAPI
-from fastapi import Request
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from .utils import get_cg
-from .utils import get_info
+from .utils import preload_datasets
 from .middleware import ResponseTimeHeader
+from .meshing import api as meshing_api
 from .segmentation import api as segmentation_api
 
 
 # TODO add tests and configure CI/CD
+preload_datasets()
 app = FastAPI()
 
 origins = ["*"]
@@ -26,4 +23,5 @@ app.add_middleware(
 app.add_middleware(ResponseTimeHeader)
 
 
+app.mount("/meshing", meshing_api)
 app.mount("/segmentation", segmentation_api)
