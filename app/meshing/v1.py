@@ -1,7 +1,12 @@
 from typing import Optional
+from json import loads
 
+from numpy import array
+from numpy import uint64
 from fastapi import FastAPI
 from fastapi import Request
+
+from ..utils import get_cg
 
 api = FastAPI()
 
@@ -16,12 +21,8 @@ async def manifest(
     prepend_seg_ids: Optional[bool] = False,
     bounds: Optional[str] = "",
 ):
-    from json import loads
     from json.decoder import JSONDecodeError
-    from numpy import array
-    from numpy import uint64
     from .utils import manifest_response
-    from ..utils import get_cg
 
     try:
         data = loads(await request.body())
@@ -55,11 +56,7 @@ async def manifest(
 
 @api.post("/table/{graph_id}/remesh")
 async def remesh(request: Request, graph_id: str):
-    from json import loads
-    from numpy import array
-    from numpy import uint64
     from .utils import remesh
-    from ..utils import get_cg
 
     data = loads(await request.body())
     return remesh(

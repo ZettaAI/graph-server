@@ -1,12 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .utils import preload_datasets
 from .middleware import ResponseTimeHeader
 from .meshing import api as meshing_api
 from .segmentation import api as segmentation_api
 
 
 # TODO add tests and configure CI/CD
+preload_datasets()
 app = FastAPI()
 
 origins = ["*"]
