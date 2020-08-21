@@ -5,30 +5,37 @@ from pychunkedgraph.graph import ChunkedGraph
 CACHE = {}
 
 
-def preload_datasets():
+def get_datasets():
     from glob import glob
     from yaml import safe_load
     from yaml import YAMLError
-
     from pychunkedgraph.graph.client import BackendClientInfo
     from pychunkedgraph.graph.client.bigtable import BigTableConfig
-    from pychunkedgraph.graph.utils.context_managers import TimeIt
 
+    datasets = []
     for f in glob("/app/datasets/*.yml"):
         config = None
         with open(f, "r") as stream:
             try:
                 config = safe_load(stream)
             except YAMLError as exc:
-                print(exc)
                 raise (exc)
-        info = BackendClientInfo(
+        client_info = BackendClientInfo(
             config["backend_client"]["TYPE"],
             CONFIG=BigTableConfig(**config["backend_client"]["CONFIG"]),
         )
-        graph_id = config["graph_id"]
+        datasets.append((config["graph_id"], client_info))
+    return datasets
+
+
+def preload_datasets():
+    from pychunkedgraph.graph.utils.context_managers import TimeIt
+
+    for dataset in get_datasets():
+        graph_id, client_info = dataset
         with TimeIt(f"preloading {graph_id}"):
-            CACHE[graph_id] = ChunkedGraph(graph_id=graph_id, client_info=info)
+            CACHE[graph_id] = ChunkedGraph(graph_id=graph_id, client_info=client_info)
+            # trigger CloudVolume initialization as well
             print(f"layer count {CACHE[graph_id].meta.layer_count}")
 
 
@@ -50,7 +57,7 @@ async def get_info(graph_id: str) -> dict:
     dataset_info = cg.meta.dataset_info
     app_info = {"app": {"supported_api_versions": [0, 1]}}
     info = {**dataset_info, **app_info}
-    info["graph"]["chunk_size"] = [2048, 1024, 128]
+    info["graph"]["chunk_size"] = [1024, 768, 256]
     info["sharded_mesh"] = True
     info["mesh"] = cg.meta.custom_data.get("mesh", {}).get("dir", "graphene_meshes")
     return info
