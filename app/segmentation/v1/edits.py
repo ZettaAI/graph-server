@@ -15,8 +15,6 @@ async def merge(
 ):
     from .edits_helpers import merge_helper
 
-    # TODO delete
-    return await merge_helper(get_cg(graph_id), request)
     return format_edit_result(
         await merge_helper(get_cg(graph_id), request), int64_as_str
     )
@@ -28,8 +26,6 @@ async def split(
 ):
     from .edits_helpers import split_helper
 
-    # TODO delete
-    return await split_helper(get_cg(graph_id), request)
     return format_edit_result(
         await split_helper(get_cg(graph_id), request), int64_as_str
     )

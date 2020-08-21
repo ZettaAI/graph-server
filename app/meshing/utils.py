@@ -80,9 +80,6 @@ def remesh(cg: ChunkedGraph, operation_id: int, l2ids: Iterable):
     fpath = f"{REMESH_PREFIX}{operation_id}"
     with Storage(in_progress) as storage:  # pylint: disable=not-context-manager
         storage.put_file(file_path=fpath, content=l2ids.tobytes())
-    # TODO delete
-    print(f"{cg.graph_id} {operation_id} {l2ids}")
-    return f"{cg.graph_id} {operation_id} {l2ids}"
 
     remeshing(
         cg,
@@ -104,8 +101,6 @@ def _get_pending_tasks(pending_path: str) -> list:
     with Storage(pending_path) as storage:  # pylint: disable=not-context-manager
         for f in storage.get_files(list(storage.list_files(prefix=REMESH_PREFIX))):
             tasks.append((f["filename"], frombuffer(f["content"], dtype=uint64)))
-    # TODO delete
-    print(tasks)
     return tasks
 
 
@@ -121,8 +116,6 @@ def remesh_pending(cg: ChunkedGraph):
     pending_path = f"{unsharded_mesh_path}/in-progress"
     for task in _get_pending_tasks(pending_path):
         fname, l2ids = task
-        # TODO delete
-        break
         remeshing(
             cg,
             l2ids,
