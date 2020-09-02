@@ -1,7 +1,13 @@
 from typing import Iterable
 from os.path import join
 
+from numpy import uint64
+from cloudvolume import Storage
+
 from pychunkedgraph.graph import ChunkedGraph
+from pychunkedgraph.meshing.meshgen import remeshing
+
+REMESH_PREFIX = "remesh_"
 
 
 def _check_post_options(
@@ -21,7 +27,6 @@ def _check_post_options(
 
 
 def manifest_response(cg: ChunkedGraph, args: tuple) -> dict:
-    from numpy import uint64
     from pychunkedgraph.meshing.manifest import speculative_manifest
     from pychunkedgraph.meshing.manifest import get_highest_child_nodes_with_meshes
 
@@ -59,13 +64,10 @@ def manifest_response(cg: ChunkedGraph, args: tuple) -> dict:
 
 
 def remesh(cg: ChunkedGraph, operation_id: int, l2ids: Iterable):
-    from time import sleep
-    from cloudvolume import Storage
-    from pychunkedgraph.meshing.meshgen import remeshing
+    from cloudvolume.storage import SimpleStorage as Storage
 
     mesh_dir = cg.meta.dataset_info["mesh"]
     mesh_info = cg.meta.custom_data.get("mesh", {})
-
     unsharded_mesh_path = join(
         cg.meta.data_source.WATERSHED,
         mesh_dir,
@@ -75,15 +77,9 @@ def remesh(cg: ChunkedGraph, operation_id: int, l2ids: Iterable):
     # files to keep track of re-meshing tasks
     # deleted after remeshing was successfult
     in_progress = f"{unsharded_mesh_path}/in-progress"
+    fpath = f"{REMESH_PREFIX}{operation_id}"
     with Storage(in_progress) as storage:  # pylint: disable=not-context-manager
-        storage.put_file(
-            file_path=f"{operation_id}",
-            content=l2ids.tobytes(),
-            cache_control="public",
-        )
-    # TODO delete
-    print(f"{cg.graph_id} {operation_id} {l2ids}")
-    return f"{cg.graph_id} {operation_id} {l2ids}"
+        storage.put_file(file_path=fpath, content=l2ids.tobytes())
 
     remeshing(
         cg,
@@ -94,7 +90,42 @@ def remesh(cg: ChunkedGraph, operation_id: int, l2ids: Iterable):
         cv_sharded_mesh_dir=mesh_dir,
         cv_unsharded_mesh_path=unsharded_mesh_path,
     )
-
     with Storage(in_progress) as storage:  # pylint: disable=not-context-manager
-        storage.delete_file(f"{operation_id}")
+        storage.delete_file(fpath)
+
+
+def _get_pending_tasks(pending_path: str) -> list:
+    from numpy import frombuffer
+
+    tasks = []
+    with Storage(pending_path) as storage:  # pylint: disable=not-context-manager
+        for f in storage.get_files(list(storage.list_files(prefix=REMESH_PREFIX))):
+            tasks.append((f["filename"], frombuffer(f["content"], dtype=uint64)))
+    return tasks
+
+
+def remesh_pending(cg: ChunkedGraph):
+    mesh_dir = cg.meta.dataset_info["mesh"]
+    mesh_info = cg.meta.custom_data.get("mesh", {})
+    unsharded_mesh_path = join(
+        cg.meta.data_source.WATERSHED,
+        mesh_dir,
+        cg.meta.dataset_info["mesh_metadata"]["unsharded_mesh_dir"],
+    )
+
+    pending_path = f"{unsharded_mesh_path}/in-progress"
+    for task in _get_pending_tasks(pending_path):
+        fname, l2ids = task
+        remeshing(
+            cg,
+            l2ids,
+            stop_layer=mesh_info["max_layer"],
+            mip=mesh_info["mip"],
+            max_err=mesh_info["max_error"],
+            cv_sharded_mesh_dir=mesh_dir,
+            cv_unsharded_mesh_path=unsharded_mesh_path,
+        )
+
+        with Storage(pending_path) as storage:  # pylint: disable=not-context-manager
+            storage.delete_file(fname)
 

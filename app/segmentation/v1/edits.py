@@ -1,4 +1,5 @@
 from typing import Optional
+from copy import copy
 
 from fastapi import Request
 from fastapi import APIRouter
@@ -15,10 +16,8 @@ async def merge(
 ):
     from .edits_helpers import merge_helper
 
-    # TODO delete
-    return await merge_helper(get_cg(graph_id), request)
     return format_edit_result(
-        await merge_helper(get_cg(graph_id), request), int64_as_str
+        await merge_helper(copy(get_cg(graph_id)), request), int64_as_str
     )
 
 
@@ -28,10 +27,8 @@ async def split(
 ):
     from .edits_helpers import split_helper
 
-    # TODO delete
-    return await split_helper(get_cg(graph_id), request)
     return format_edit_result(
-        await split_helper(get_cg(graph_id), request), int64_as_str
+        await split_helper(copy(get_cg(graph_id)), request), int64_as_str
     )
 
 
@@ -42,7 +39,7 @@ async def split_preview(
     from .edits_helpers import split_preview_helper
 
     return await split_preview_helper(
-        get_cg(graph_id), request, int64_as_str=int64_as_str
+        copy(get_cg(graph_id)), request, int64_as_str=int64_as_str
     )
 
 
@@ -53,7 +50,7 @@ async def undo(
     from .edits_helpers import undo_helper
 
     return format_edit_result(
-        await undo_helper(get_cg(graph_id), request), int64_as_str
+        await undo_helper(copy(get_cg(graph_id)), request), int64_as_str
     )
 
 
@@ -64,5 +61,5 @@ async def redo(
     from .edits_helpers import redo_helper
 
     return format_edit_result(
-        await redo_helper(get_cg(graph_id), request), int64_as_str
+        await redo_helper(copy(get_cg(graph_id)), request), int64_as_str
     )
