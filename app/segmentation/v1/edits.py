@@ -10,7 +10,7 @@ from ...utils import get_cg
 router = APIRouter()
 
 
-@router.post("/table/{graph_id}/merge")
+@router.post("/{graph_id}/merge")
 async def merge(
     request: Request, graph_id: str, int64_as_str: Optional[bool] = False,
 ):
@@ -21,7 +21,7 @@ async def merge(
     )
 
 
-@router.post("/table/{graph_id}/split")
+@router.post("/{graph_id}/split")
 async def split(
     request: Request, graph_id: str, int64_as_str: Optional[bool] = False,
 ):
@@ -32,7 +32,7 @@ async def split(
     )
 
 
-@router.post("/table/{graph_id}/graph/split_preview")
+@router.post("/{graph_id}/graph/split_preview")
 async def split_preview(
     request: Request, graph_id: str, int64_as_str: Optional[bool] = False,
 ):
@@ -43,7 +43,7 @@ async def split_preview(
     )
 
 
-@router.post("/table/{graph_id}/undo")
+@router.post("/{graph_id}/undo")
 async def undo(
     request: Request, graph_id: str, int64_as_str: Optional[bool] = False,
 ):
@@ -54,7 +54,7 @@ async def undo(
     )
 
 
-@router.post("/table/{graph_id}/redo")
+@router.post("/{graph_id}/redo")
 async def redo(
     request: Request, graph_id: str, int64_as_str: Optional[bool] = False,
 ):

@@ -15,7 +15,7 @@ from ...utils import string_array
 router = APIRouter()
 
 
-@router.get("/table/{graph_id}/node/{node_id}/subgraph")
+@router.get("/{graph_id}/node/{node_id}/subgraph")
 async def subgraph(
     graph_id: str,
     node_id: int,
@@ -33,7 +33,7 @@ async def subgraph(
     return {"atomic_edges": atomic_edges}
 
 
-@router.get("/table/{graph_id}/node/{node_id}/leaves")
+@router.get("/{graph_id}/node/{node_id}/leaves")
 async def leaves(
     graph_id: str,
     node_id: int,
