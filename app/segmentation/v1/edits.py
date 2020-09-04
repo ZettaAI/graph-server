@@ -16,6 +16,8 @@ async def merge(
 ):
     from .edits_helpers import merge_helper
 
+    # TODO wrap edits with try except
+
     return format_edit_result(
         await merge_helper(copy(get_cg(graph_id)), request), int64_as_str
     )
