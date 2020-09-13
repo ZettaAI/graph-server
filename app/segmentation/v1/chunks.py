@@ -11,7 +11,7 @@ from .utils import get_l2_chunk_children
 router = APIRouter()
 
 
-@router.get("/table/{graph_id}/l2_chunk_children/{chunk_id}")
+@router.get("/{graph_id}/l2_chunk_children/{chunk_id}")
 async def l2_chunk_children(
     graph_id: str,
     chunk_id: int,
@@ -35,7 +35,7 @@ async def l2_chunk_children(
     return {"l2_chunk_children": dumps(children)}
 
 
-@router.get("/table/{graph_id}/l2_chunk_children_binary/{chunk_id}")
+@router.get("/{graph_id}/l2_chunk_children_binary/{chunk_id}")
 async def l2_chunk_children_binary(
     graph_id: str,
     chunk_id: int,
