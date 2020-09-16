@@ -29,7 +29,7 @@ def _check_post_options(
 
 
 def manifest_response(cg: ChunkedGraph, args: tuple) -> dict:
-    from pychunkedgraph.meshing.manifest import speculative_manifest
+    from pychunkedgraph.meshing.manifest import speculative_manifest_sharded
     from pychunkedgraph.meshing.manifest import get_highest_child_nodes_with_meshes
 
     (
@@ -45,7 +45,12 @@ def manifest_response(cg: ChunkedGraph, args: tuple) -> dict:
     resp = {}
     seg_ids = []
     if not verify:
-        seg_ids, resp["fragments"] = speculative_manifest(cg, node_id)
+        seg_ids, resp["fragments"] = speculative_manifest_sharded(
+            cg,
+            node_id,
+            start_layer,
+            bounding_box=bounding_box,
+        )
     else:
         seg_ids, resp["fragments"] = get_highest_child_nodes_with_meshes(
             cg,
@@ -55,11 +60,9 @@ def manifest_response(cg: ChunkedGraph, args: tuple) -> dict:
             bounding_box=bounding_box,
             flexible_start_layer=flexible_start_layer,
         )
-        if prepend_seg_ids:
-            resp["fragments"] = [
-                f"~{i}:{f}" for i, f in zip(seg_ids, resp["fragments"])
-            ]
-        seg_ids = seg_ids.tolist()
+    seg_ids = seg_ids.tolist()
+    if prepend_seg_ids:
+        resp["fragments"] = [f"~{i}:{f}" for i, f in zip(seg_ids, resp["fragments"])]
     if return_seg_ids:
         resp["seg_ids"] = seg_ids
     return _check_post_options(cg, resp, data, seg_ids)

@@ -33,7 +33,7 @@ async def manifest(
         bbox = array([b.split("-") for b in bounds.split("_")], dtype=int).T
 
     cg = get_cg(graph_id)
-    start_layer = cg.get_chunk_layer(uint64(node_id))
+    start_layer = cg.meta.custom_data.get("mesh", {}).get("max_layer", 2)
     if "start_layer" in data:
         start_layer = int(data["start_layer"])
 
@@ -62,4 +62,3 @@ async def remesh(request: Request, graph_id: str):
     return remesh(
         get_cg(graph_id), data["operation_id"], array(data["l2ids"], dtype=uint64)
     )
-
