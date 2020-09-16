@@ -1,7 +1,9 @@
+from typing import Tuple
 from typing import Iterable
 from os.path import join
 
 from numpy import uint64
+from numpy import ndarray
 from cloudvolume import Storage
 
 from pychunkedgraph.graph import ChunkedGraph
@@ -27,7 +29,7 @@ def _check_post_options(
 
 
 def manifest_response(cg: ChunkedGraph, args: tuple) -> dict:
-    from pychunkedgraph.meshing.manifest import speculative_manifest
+    from pychunkedgraph.meshing.manifest import speculative_manifest_sharded
     from pychunkedgraph.meshing.manifest import get_highest_child_nodes_with_meshes
 
     (
@@ -43,7 +45,12 @@ def manifest_response(cg: ChunkedGraph, args: tuple) -> dict:
     resp = {}
     seg_ids = []
     if not verify:
-        seg_ids, resp["fragments"] = speculative_manifest(cg, node_id)
+        seg_ids, resp["fragments"] = speculative_manifest_sharded(
+            cg,
+            node_id,
+            start_layer,
+            bounding_box=bounding_box,
+        )
     else:
         seg_ids, resp["fragments"] = get_highest_child_nodes_with_meshes(
             cg,
@@ -53,33 +60,45 @@ def manifest_response(cg: ChunkedGraph, args: tuple) -> dict:
             bounding_box=bounding_box,
             flexible_start_layer=flexible_start_layer,
         )
-        if prepend_seg_ids:
-            resp["fragments"] = [
-                f"~{i}:{f}" for i, f in zip(seg_ids, resp["fragments"])
-            ]
-        seg_ids = seg_ids.tolist()
+    seg_ids = seg_ids.tolist()
+    if prepend_seg_ids:
+        resp["fragments"] = [f"~{i}:{f}" for i, f in zip(seg_ids, resp["fragments"])]
     if return_seg_ids:
         resp["seg_ids"] = seg_ids
     return _check_post_options(cg, resp, data, seg_ids)
 
 
-def remesh(cg: ChunkedGraph, operation_id: int, l2ids: Iterable):
-    from cloudvolume.storage import SimpleStorage as Storage
-
+def get_remesh_info(cg: ChunkedGraph, operation_id: int) -> Tuple[str, str, str, str]:
     mesh_dir = cg.meta.dataset_info["mesh"]
-    mesh_info = cg.meta.custom_data.get("mesh", {})
     unsharded_mesh_path = join(
         cg.meta.data_source.WATERSHED,
         mesh_dir,
         cg.meta.dataset_info["mesh_metadata"]["unsharded_mesh_dir"],
     )
 
-    # files to keep track of re-meshing tasks
-    # deleted after remeshing was successfult
-    in_progress = f"{unsharded_mesh_path}/in-progress"
-    fpath = f"{REMESH_PREFIX}{operation_id}"
-    with Storage(in_progress) as storage:  # pylint: disable=not-context-manager
-        storage.put_file(file_path=fpath, content=l2ids.tobytes())
+    return (
+        mesh_dir,
+        unsharded_mesh_path,
+        f"{unsharded_mesh_path}/in-progress",
+        f"{REMESH_PREFIX}{operation_id}",
+    )
+
+
+def record_remesh_ids(cg: ChunkedGraph, operation_id: int, l2ids: ndarray):
+    from cloudvolume.storage import SimpleStorage as Storage
+
+    _, _, bucket_path, file_name = get_remesh_info(cg, operation_id)
+    with Storage(bucket_path) as storage:  # pylint: disable=not-context-manager
+        storage.put_file(file_path=file_name, content=l2ids.tobytes())
+
+
+def remesh(cg: ChunkedGraph, operation_id: int, l2ids: ndarray):
+    from cloudvolume.storage import SimpleStorage as Storage
+
+    mesh_info = cg.meta.custom_data.get("mesh", {})
+    mesh_dir, unsharded_mesh_path, bucket_path, file_name = get_remesh_info(
+        cg, operation_id
+    )
 
     remeshing(
         cg,
@@ -90,8 +109,8 @@ def remesh(cg: ChunkedGraph, operation_id: int, l2ids: Iterable):
         cv_sharded_mesh_dir=mesh_dir,
         cv_unsharded_mesh_path=unsharded_mesh_path,
     )
-    with Storage(in_progress) as storage:  # pylint: disable=not-context-manager
-        storage.delete_file(fpath)
+    with Storage(bucket_path) as storage:  # pylint: disable=not-context-manager
+        storage.delete_file(file_name)
 
 
 def _get_pending_tasks(pending_path: str) -> list:
@@ -128,4 +147,3 @@ def remesh_pending(cg: ChunkedGraph):
 
         with Storage(pending_path) as storage:  # pylint: disable=not-context-manager
             storage.delete_file(fname)
-

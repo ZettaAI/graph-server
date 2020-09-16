@@ -35,18 +35,22 @@ def _process_split_request_nodes(cg: ChunkedGraph, data: dict) -> dict:
     return result
 
 
-async def _remesh(graph_id: str, operation_id: int, l2ids: Iterable) -> None:
+async def _remesh(cg: ChunkedGraph, operation_id: int, l2ids: Iterable) -> None:
     from os import environ
     from json import dumps
     from requests import post
     from requests.exceptions import ReadTimeout
+    from ...meshing.utils import record_remesh_ids
 
-    remesh_svc = environ.get("REMESH_SERVICE", "http://localhost:2000")
+    # log operations that need remeshed, in case the remesh service is unreachable
+    # these are deleted when the remeshing is successful.
+    record_remesh_ids(cg, operation_id, array(l2ids, dtype=uint64))
 
     try:
+        remesh_svc = environ.get("REMESH_SERVICE", "http://localhost:2000")
         # trigger re-mesh task, no need to wait for response
         post(
-            f"{remesh_svc}/meshing/api/v1/table/{graph_id}/remesh",
+            f"{remesh_svc}/meshing/api/v1/table/{cg.graph_id}/remesh",
             data=dumps({"operation_id": int(operation_id), "l2ids": l2ids}),
             timeout=0.1,
         )
@@ -81,7 +85,7 @@ async def merge_helper(cg: ChunkedGraph, request: Request):
 
     assert resp.new_root_ids is not None, "Could not merge selected supervoxels."
     if len(resp.new_lvl2_ids):
-        await _remesh(cg.graph_id, resp.operation_id, resp.new_lvl2_ids.tolist())
+        await _remesh(cg, resp.operation_id, resp.new_lvl2_ids.tolist())
     return resp
 
 
@@ -105,7 +109,7 @@ async def split_helper(cg: ChunkedGraph, request: Request):
 
     assert resp.new_root_ids is not None, "Could not split selected segment groups."
     if len(resp.new_lvl2_ids):
-        await _remesh(cg.graph_id, resp.operation_id, resp.new_lvl2_ids.tolist())
+        await _remesh(cg, resp.operation_id, resp.new_lvl2_ids.tolist())
     return resp
 
 
@@ -149,7 +153,7 @@ async def undo_helper(cg: ChunkedGraph, request: Request):
     except (exceptions.PreconditionError, exceptions.PostconditionError) as e:
         raise exceptions.BadRequest(e)
     if len(resp.new_lvl2_ids):
-        await _remesh(cg.graph_id, resp.operation_id, resp.new_lvl2_ids.tolist())
+        await _remesh(cg, resp.operation_id, resp.new_lvl2_ids.tolist())
     return resp
 
 
@@ -162,7 +166,7 @@ async def redo_helper(cg: ChunkedGraph, request: Request):
     except (exceptions.PreconditionError, exceptions.PostconditionError) as e:
         raise exceptions.BadRequest(e)
     if len(resp.new_lvl2_ids):
-        await _remesh(cg.graph_id, resp.operation_id, resp.new_lvl2_ids.tolist())
+        await _remesh(cg, resp.operation_id, resp.new_lvl2_ids.tolist())
     return resp
 
 
