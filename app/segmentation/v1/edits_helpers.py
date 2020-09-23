@@ -73,7 +73,7 @@ async def merge_helper(cg: ChunkedGraph, request: Request):
 
     try:
         resp = cg.add_edges(
-            user_id=str(request.client),
+            user_id=request.headers.get("X-Forwarded-User", str(request.client)),
             atomic_edges=array(atomic_edge, dtype=uint64),
             source_coords=coords[:1],
             sink_coords=coords[1:],
@@ -95,7 +95,7 @@ async def split_helper(cg: ChunkedGraph, request: Request):
     data_dict = _process_split_request_nodes(cg, loads(await request.body()))
     try:
         resp = cg.remove_edges(
-            user_id=str(request.client),
+            user_id=request.headers.get("X-Forwarded-User", str(request.client)),
             source_ids=data_dict["sources"]["id"],
             sink_ids=data_dict["sinks"]["id"],
             source_coords=data_dict["sources"]["coord"],
@@ -147,7 +147,10 @@ async def split_preview_helper(
 async def undo_helper(cg: ChunkedGraph, request: Request):
     operation_id = uint64(loads(await request.body())["operation_id"])
     try:
-        resp = cg.undo(user_id=str(request.client), operation_id=operation_id)
+        resp = cg.undo(
+            user_id=request.headers.get("X-Forwarded-User", str(request.client)),
+            operation_id=operation_id,
+        )
     except exceptions.LockingError as e:
         raise exceptions.InternalServerError(e)
     except (exceptions.PreconditionError, exceptions.PostconditionError) as e:
@@ -160,7 +163,10 @@ async def undo_helper(cg: ChunkedGraph, request: Request):
 async def redo_helper(cg: ChunkedGraph, request: Request):
     operation_id = uint64(loads(await request.body())["operation_id"])
     try:
-        resp = cg.redo(user_id=str(request.client), operation_id=operation_id)
+        resp = cg.redo(
+            user_id=request.headers.get("X-Forwarded-User", str(request.client)),
+            operation_id=operation_id,
+        )
     except exceptions.LockingError as e:
         raise exceptions.InternalServerError(e)
     except (exceptions.PreconditionError, exceptions.PostconditionError) as e:
