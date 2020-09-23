@@ -8,9 +8,7 @@ from pychunkedgraph.graph.client import BackendClientInfo
 CACHE = {}
 
 
-def get_datasets(
-    glob_path: str = "/app/datasets/*.yml",
-) -> List[Tuple[str, BackendClientInfo]]:
+def get_datasets(glob_path: str) -> List[Tuple[str, BackendClientInfo]]:
     from glob import glob
     from yaml import safe_load
     from yaml import YAMLError
@@ -32,10 +30,10 @@ def get_datasets(
     return datasets
 
 
-def preload_datasets():
+def preload_datasets(glob_path: str = "/app/datasets/*.yml") -> None:
     from pychunkedgraph.graph.utils.context_managers import TimeIt
 
-    for dataset in get_datasets():
+    for dataset in get_datasets(glob_path):
         graph_id, client_info = dataset
         with TimeIt(f"preloading {graph_id}"):
             CACHE[graph_id] = ChunkedGraph(graph_id=graph_id, client_info=client_info)
@@ -76,11 +74,15 @@ def string_array(a: Iterable) -> Iterable:
 
 def toboolean(value):
     """ Parse value to boolean type. """
-    if not value:
-        raise ValueError("Can't convert null to boolean")
+    if value == None:
+        raise ValueError("Can't convert None to boolean")
 
     if isinstance(value, bool):
         return value
+
+    if isinstance(value, int) or isinstance(value, float):
+        return value != 0
+
     try:
         value = value.lower()
     except:
