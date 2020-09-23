@@ -1,19 +1,23 @@
+from typing import List
+from typing import Tuple
 from typing import Iterable
 
 from pychunkedgraph.graph import ChunkedGraph
+from pychunkedgraph.graph.client import BackendClientInfo
 
 CACHE = {}
 
 
-def get_datasets():
+def get_datasets(
+    glob_path: str = "/app/datasets/*.yml",
+) -> List[Tuple[str, BackendClientInfo]]:
     from glob import glob
     from yaml import safe_load
     from yaml import YAMLError
-    from pychunkedgraph.graph.client import BackendClientInfo
     from pychunkedgraph.graph.client.bigtable import BigTableConfig
 
     datasets = []
-    for f in glob("/app/datasets/*.yml"):
+    for f in glob(glob_path):
         config = None
         with open(f, "r") as stream:
             try:
