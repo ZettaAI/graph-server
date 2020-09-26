@@ -49,8 +49,10 @@ async def roots(
     timestamp: Optional[float] = time(),
     int64_as_str: Optional[bool] = False,
 ):
+    from numpy import fromiter
+
     roots = get_cg(graph_id).get_roots(
-        array(node_ids, dtype=uint64),
+        fromiter(node_ids, dtype=uint64),
         stop_layer=stop_layer,
         time_stamp=datetime.fromtimestamp(timestamp, UTC),
     )
@@ -78,9 +80,11 @@ async def roots_binary(
     return roots.tobytes()
 
 
-@api.post("/table/{graph_id}/node/{node_id}/children")
+@api.get("/table/{graph_id}/node/{node_id}/children")
 async def children(
-    graph_id: str, node_id: int, int64_as_str: Optional[bool] = False,
+    graph_id: str,
+    node_id: int,
+    int64_as_str: Optional[bool] = False,
 ):
     cg = get_cg(graph_id)
     node_id = uint64(node_id)
@@ -90,4 +94,3 @@ async def children(
     if int64_as_str:
         return {"root_ids": string_array(children)}
     return {"root_ids": children}
-

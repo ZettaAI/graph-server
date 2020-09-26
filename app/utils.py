@@ -43,14 +43,19 @@ def preload_datasets(glob_path: str = "/app/datasets/*.yml") -> None:
 
 def get_cg(graph_id: str) -> ChunkedGraph:
     from pychunkedgraph.graph.client import get_default_client_info
+    from pychunkedgraph.graph.exceptions import InternalServerError
 
     try:
         return CACHE[graph_id]
     except KeyError:
         pass
-    CACHE[graph_id] = ChunkedGraph(
-        graph_id=graph_id, client_info=get_default_client_info()
-    )
+
+    try:
+        CACHE[graph_id] = ChunkedGraph(
+            graph_id=graph_id, client_info=get_default_client_info()
+        )
+    except Exception as e:
+        raise (InternalServerError(e))
     return CACHE[graph_id]
 
 
