@@ -3,70 +3,71 @@ from pytest import raises
 from ..test_main import client
 
 
-def test_home():
-    from starlette.status import HTTP_200_OK
-
-    response = client.get("/segmentation")
-    assert response.status_code == HTTP_200_OK
-    assert response.json().get("version") != None
-
-
-def test_info():
-    from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
-    from pychunkedgraph.graph.exceptions import InternalServerError
-
-    with raises(InternalServerError):
-        response = client.get("/segmentation/table/test/info")
-        assert response.status_code == HTTP_500_INTERNAL_SERVER_ERROR
-
-
-def test_root():
-    from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
-    from pychunkedgraph.graph.exceptions import InternalServerError
-
-    with raises(InternalServerError):
-        response = client.get("/segmentation/api/v1/table/test/node/123/root")
-        assert response.status_code == HTTP_500_INTERNAL_SERVER_ERROR
-
-
-def test_roots():
-    from starlette.status import HTTP_405_METHOD_NOT_ALLOWED
-    from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
-    from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
-    from pychunkedgraph.graph.exceptions import InternalServerError
-
-    PATH = "/segmentation/api/v1/table/test/roots"
-    response = client.get(PATH)
-    assert response.status_code == HTTP_405_METHOD_NOT_ALLOWED
-
-    response = client.post(PATH)
-    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
-
-    with raises(InternalServerError):
-        response = client.post(PATH, json=[1, 2, 3])
-        assert response.status_code == HTTP_500_INTERNAL_SERVER_ERROR
-
-
-def test_roots_binary():
-    from numpy import array
+def test_merge():
     from starlette.status import HTTP_405_METHOD_NOT_ALLOWED
     from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
     from pychunkedgraph.graph.exceptions import InternalServerError
-    from pychunkedgraph.graph.utils.basetypes import NODE_ID
 
-    PATH = "/segmentation/api/v1/table/test/roots_binary"
+    PATH = "/segmentation/api/v1/table/test/merge"
     response = client.get(PATH)
     assert response.status_code == HTTP_405_METHOD_NOT_ALLOWED
 
     with raises(InternalServerError):
-        response = client.post(PATH, data=array([3, 2, 1], dtype=NODE_ID).tobytes())
+        response = client.post(PATH, json=[1, 2])
         assert response.status_code == HTTP_500_INTERNAL_SERVER_ERROR
 
 
-def test_children():
+def test_split():
+    from starlette.status import HTTP_405_METHOD_NOT_ALLOWED
     from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
     from pychunkedgraph.graph.exceptions import InternalServerError
 
+    PATH = "/segmentation/api/v1/table/test/split"
+    response = client.get(PATH)
+    assert response.status_code == HTTP_405_METHOD_NOT_ALLOWED
+
     with raises(InternalServerError):
-        response = client.get("/segmentation/api/v1/table/test/node/123/children")
+        response = client.post(PATH, json=[1, 2])
+        assert response.status_code == HTTP_500_INTERNAL_SERVER_ERROR
+
+
+def test_split_preview():
+    from starlette.status import HTTP_405_METHOD_NOT_ALLOWED
+    from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+    from pychunkedgraph.graph.exceptions import InternalServerError
+
+    PATH = "/segmentation/api/v1/table/test/graph/split_preview"
+    response = client.get(PATH)
+    assert response.status_code == HTTP_405_METHOD_NOT_ALLOWED
+
+    with raises(InternalServerError):
+        response = client.post(PATH, json=[1, 2])
+        assert response.status_code == HTTP_500_INTERNAL_SERVER_ERROR
+
+
+def test_undo():
+    from starlette.status import HTTP_405_METHOD_NOT_ALLOWED
+    from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+    from pychunkedgraph.graph.exceptions import InternalServerError
+
+    PATH = "/segmentation/api/v1/table/test/undo"
+    response = client.get(PATH)
+    assert response.status_code == HTTP_405_METHOD_NOT_ALLOWED
+
+    with raises(InternalServerError):
+        response = client.post(PATH, json=[1, 2])
+        assert response.status_code == HTTP_500_INTERNAL_SERVER_ERROR
+
+
+def test_redo():
+    from starlette.status import HTTP_405_METHOD_NOT_ALLOWED
+    from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+    from pychunkedgraph.graph.exceptions import InternalServerError
+
+    PATH = "/segmentation/api/v1/table/test/redo"
+    response = client.get(PATH)
+    assert response.status_code == HTTP_405_METHOD_NOT_ALLOWED
+
+    with raises(InternalServerError):
+        response = client.post(PATH, json=[1, 2])
         assert response.status_code == HTTP_500_INTERNAL_SERVER_ERROR
