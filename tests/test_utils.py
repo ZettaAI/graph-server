@@ -26,8 +26,7 @@ def test_preload_datasets():
     from app.utils import CACHE
     from app.utils import preload_datasets
 
-    assert len(CACHE) == 0
-
+    CACHE = {}
     # wrong path provided deliberately
     # TODO fix test after bigtable emulator is setup
     preload_datasets(glob_path="tests/dataset/*.yml")
