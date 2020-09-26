@@ -1,10 +1,14 @@
 from pytest import raises
 
+from . import TEST_DATASETS_WRONG_PATH
+
 
 def test_get_datasets():
     from app.utils import get_datasets
 
-    datasets = get_datasets("tests/datasets/*.yml")
+    from . import TEST_DATASETS_PATH
+
+    datasets = get_datasets(TEST_DATASETS_PATH)
 
     assert len(datasets) == 2
     assert type(datasets[0]) == tuple
@@ -28,8 +32,8 @@ def test_preload_datasets():
 
     CACHE = {}
     # wrong path provided deliberately
-    # TODO fix test after bigtable emulator is setup
-    preload_datasets(glob_path="tests/dataset/*.yml")
+    # TODO fix test after bigtable emulator/mocking is setup
+    preload_datasets(glob_path=TEST_DATASETS_WRONG_PATH)
     assert len(CACHE) == 0
 
 
@@ -39,7 +43,7 @@ def test_get_cg():
     from app.utils import get_cg
     from app.utils import preload_datasets
 
-    preload_datasets(glob_path="tests/dataset/*.yml")
+    preload_datasets(glob_path=TEST_DATASETS_WRONG_PATH)
 
     with raises(Exception):
         get_cg("test_graph1")

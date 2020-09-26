@@ -5,7 +5,7 @@ from datetime import datetime
 from pytz import UTC
 from fastapi import APIRouter
 
-from .utils import get_l2_chunk_children
+from ..utils import get_l2_chunk_children
 
 
 router = APIRouter()

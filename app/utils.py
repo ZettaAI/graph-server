@@ -6,6 +6,7 @@ from pychunkedgraph.graph import ChunkedGraph
 from pychunkedgraph.graph.client import BackendClientInfo
 
 CACHE = {}
+DATASETS_PATH = "/app/datasets/*.yml"
 
 
 def get_datasets(glob_path: str) -> List[Tuple[str, BackendClientInfo]]:
@@ -30,7 +31,7 @@ def get_datasets(glob_path: str) -> List[Tuple[str, BackendClientInfo]]:
     return datasets
 
 
-def preload_datasets(glob_path: str = "/app/datasets/*.yml") -> None:
+def preload_datasets(glob_path: str = DATASETS_PATH) -> None:
     from pychunkedgraph.graph.utils.context_managers import TimeIt
 
     for dataset in get_datasets(glob_path):
@@ -43,7 +44,7 @@ def preload_datasets(glob_path: str = "/app/datasets/*.yml") -> None:
 
 def get_cg(graph_id: str) -> ChunkedGraph:
     from pychunkedgraph.graph.client import get_default_client_info
-    from pychunkedgraph.graph.exceptions import InternalServerError
+    from pychunkedgraph.graph.exceptions import ChunkedGraphError
 
     try:
         return CACHE[graph_id]
@@ -55,7 +56,7 @@ def get_cg(graph_id: str) -> ChunkedGraph:
             graph_id=graph_id, client_info=get_default_client_info()
         )
     except Exception as e:
-        raise (InternalServerError(e))
+        raise ChunkedGraphError(f"Error initializing ChunkedGraph: {str(e)}.")
     return CACHE[graph_id]
 
 

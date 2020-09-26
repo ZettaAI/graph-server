@@ -1,19 +1,18 @@
-from pytest import raises
-
-
 def test_get_l2_chunk_children():
     from time import time
     from datetime import datetime
-    from pytz import UTC
-    from app.segmentation.v1.utils import get_l2_chunk_children
-    from pychunkedgraph.graph.exceptions import InternalServerError
 
-    with raises(InternalServerError):
+    from pytest import raises
+    from pytz import UTC
+    from pychunkedgraph.graph.exceptions import ChunkedGraphError
+    from app.segmentation.utils import get_l2_chunk_children
+
+    with raises(ChunkedGraphError):
         get_l2_chunk_children(
             "test_graph1", 120, timestamp=datetime.fromtimestamp(time(), UTC)
         )
 
-    with raises(InternalServerError):
+    with raises(ChunkedGraphError):
         get_l2_chunk_children(
             "test_graph1",
             120,
