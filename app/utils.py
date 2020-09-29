@@ -44,24 +44,19 @@ def preload_datasets(glob_path: str = DATASETS_PATH) -> None:
             print(f"layer count {CACHE[graph_id].meta.layer_count}")
 
 
-def get_cg(graph_id: str, skip_cache: bool = False) -> ChunkedGraph:
+def get_cg(graph_id: str) -> ChunkedGraph:
     from pychunkedgraph.graph.client import get_default_client_info
     from pychunkedgraph.graph.exceptions import ChunkedGraphError
 
-    if skip_cache is False:
-        try:
-            return CACHE[graph_id]
-        except KeyError:
-            pass
-
+    try:
+        return CACHE[graph_id]
+    except KeyError:
+        pass
     try:
         cg = ChunkedGraph(graph_id=graph_id, client_info=get_default_client_info())
     except Exception as e:
         raise ChunkedGraphError(f"Error initializing ChunkedGraph: {str(e)}.")
-
-    if skip_cache is False:
-        CACHE[graph_id] = cg
-    return cg
+    return CACHE[graph_id]
 
 
 async def get_info(graph_id: str) -> dict:
