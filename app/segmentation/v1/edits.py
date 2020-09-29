@@ -16,7 +16,7 @@ async def merge(request: Request, graph_id: str, int64_as_str: Optional[bool] = 
     from .edits_helpers import merge_helper
 
     try:
-        result = await merge_helper(copy(get_cg(graph_id)), request)
+        result = await merge_helper(get_cg(graph_id, skip_cache=True), request)
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
     except exceptions.ChunkedGraphError as e:
@@ -31,7 +31,7 @@ async def split(request: Request, graph_id: str, int64_as_str: Optional[bool] = 
     from .edits_helpers import split_helper
 
     try:
-        result = await split_helper(copy(get_cg(graph_id)), request)
+        result = await split_helper(get_cg(graph_id, skip_cache=True), request)
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
     except exceptions.ChunkedGraphError as e:
@@ -49,7 +49,7 @@ async def split_preview(
 
     try:
         return await split_preview_helper(
-            copy(get_cg(graph_id)), request, int64_as_str=int64_as_str
+            get_cg(graph_id, skip_cache=True), request, int64_as_str=int64_as_str
         )
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
@@ -64,7 +64,7 @@ async def undo(request: Request, graph_id: str, int64_as_str: Optional[bool] = F
     from .edits_helpers import undo_helper
 
     try:
-        result = await undo_helper(copy(get_cg(graph_id)), request)
+        result = await undo_helper(get_cg(graph_id, skip_cache=True), request)
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
     except exceptions.ChunkedGraphError as e:
@@ -79,7 +79,7 @@ async def redo(request: Request, graph_id: str, int64_as_str: Optional[bool] = F
     from .edits_helpers import redo_helper
 
     try:
-        result = await redo_helper(copy(get_cg(graph_id)), request)
+        result = await redo_helper(get_cg(graph_id, skip_cache=True), request)
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
     except exceptions.ChunkedGraphError as e:

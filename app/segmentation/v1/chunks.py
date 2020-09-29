@@ -1,5 +1,4 @@
 from typing import Optional
-from time import time
 from datetime import datetime
 
 from pytz import UTC
@@ -15,7 +14,7 @@ router = APIRouter()
 async def l2_chunk_children(
     graph_id: str,
     chunk_id: int,
-    timestamp: Optional[float] = time(),
+    timestamp: Optional[float] = None,
     int64_as_str: Optional[bool] = False,
     as_array: Optional[bool] = False,
 ):
@@ -25,7 +24,7 @@ async def l2_chunk_children(
     children = get_l2_chunk_children(
         graph_id,
         chunk_id,
-        timestamp=datetime.fromtimestamp(timestamp, UTC),
+        time_stamp=datetime.fromtimestamp(timestamp, UTC) if timestamp else None,
         flatten=as_array,
     )
     if as_array:
@@ -39,7 +38,7 @@ async def l2_chunk_children(
 async def l2_chunk_children_binary(
     graph_id: str,
     chunk_id: int,
-    timestamp: Optional[float] = time(),
+    timestamp: Optional[float] = None,
     as_array: Optional[bool] = False,
 ):
     from pickle import dumps
@@ -47,10 +46,9 @@ async def l2_chunk_children_binary(
     children = get_l2_chunk_children(
         graph_id,
         chunk_id,
-        timestamp=datetime.fromtimestamp(timestamp, UTC),
+        time_stamp=datetime.fromtimestamp(timestamp, UTC) if timestamp else None,
         flatten=as_array,
     )
     if as_array:
         return children.tobytes()
     return dumps(children)
-
