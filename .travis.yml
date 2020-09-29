@@ -30,4 +30,4 @@ jobs:
       - gcloud auth activate-service-account --key-file=key.json
       - gcloud auth configure-docker
       - docker build --tag zetta/graph-server:$TRAVIS_BRANCH . || travis_terminate 1
-      - docker run $ci_env --rm zetta/grah-server:$TRAVIS_BRANCH /bin/sh -c "coverage run --source app -m pytest -x -rxP --durations=10  && coverage report"
+      - docker run $ci_env --rm zetta/graph-server:$TRAVIS_BRANCH /bin/sh -c "coverage run --source app -m pytest -x -rxP --durations=10  && coverage report"
