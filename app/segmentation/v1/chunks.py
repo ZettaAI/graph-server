@@ -24,7 +24,7 @@ async def l2_chunk_children(
     children = get_l2_chunk_children(
         graph_id,
         chunk_id,
-        time_stamp=datetime.fromtimestamp(timestamp, UTC) if timestamp else None,
+        timestamp=datetime.fromtimestamp(timestamp, UTC) if timestamp else None,
         flatten=as_array,
     )
     if as_array:
@@ -46,7 +46,7 @@ async def l2_chunk_children_binary(
     children = get_l2_chunk_children(
         graph_id,
         chunk_id,
-        time_stamp=datetime.fromtimestamp(timestamp, UTC) if timestamp else None,
+        timestamp=datetime.fromtimestamp(timestamp, UTC) if timestamp else None,
         flatten=as_array,
     )
     if as_array:

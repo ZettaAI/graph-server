@@ -50,21 +50,17 @@ def get_cg(graph_id: str, skip_cache: bool = False) -> ChunkedGraph:
 
     if skip_cache is False:
         try:
-            print("cache", CACHE[graph_id].cache)
             return CACHE[graph_id]
         except KeyError:
             pass
 
     try:
         cg = ChunkedGraph(graph_id=graph_id, client_info=get_default_client_info())
-        print("cache", cg.cache)
     except Exception as e:
         raise ChunkedGraphError(f"Error initializing ChunkedGraph: {str(e)}.")
 
     if skip_cache is False:
         CACHE[graph_id] = cg
-        print("cache", CACHE[graph_id].cache)
-    print("cache", cg.cache)
     return cg
 
 
