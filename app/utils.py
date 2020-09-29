@@ -2,11 +2,13 @@ from typing import List
 from typing import Tuple
 from typing import Iterable
 
+from os import environ
+
 from pychunkedgraph.graph import ChunkedGraph
 from pychunkedgraph.graph.client import BackendClientInfo
 
 CACHE = {}
-DATASETS_PATH = "/app/datasets/*.yml"
+DATASETS_PATH = environ.get("PRELOAD_DATASETS", "/app/datasets/*.yml")
 
 
 def get_datasets(glob_path: str) -> List[Tuple[str, BackendClientInfo]]:

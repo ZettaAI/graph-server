@@ -1,12 +1,10 @@
 from pytest import raises
 
-from . import TEST_DATASETS_WRONG_PATH
+from . import TEST_DATASETS_PATH
 
 
 def test_get_datasets():
     from app.utils import get_datasets
-
-    from . import TEST_DATASETS_PATH
 
     datasets = get_datasets(TEST_DATASETS_PATH)
 
@@ -19,31 +17,15 @@ def test_get_datasets():
     assert dataset2_name == "test_graph2"
 
     assert dataset1_clientinfo.TYPE == "bigtable"
-    assert dataset1_clientinfo.CONFIG.PROJECT == "test_project1"
+    assert dataset1_clientinfo.CONFIG.PROJECT == "IGNORE_ENVIRONMENT_PROJECT"
 
     assert dataset1_clientinfo.CONFIG.ADMIN == True
     assert dataset2_clientinfo.CONFIG.ADMIN == False
 
 
-def test_preload_datasets():
-    from pychunkedgraph.graph import ChunkedGraph
-    from app.utils import CACHE
-    from app.utils import preload_datasets
-
-    CACHE = {}
-    # wrong path provided deliberately
-    # TODO fix test after bigtable emulator/mocking is setup
-    preload_datasets(glob_path=TEST_DATASETS_WRONG_PATH)
-    assert len(CACHE) == 0
-
-
 def test_get_cg():
     from pychunkedgraph.graph import ChunkedGraph
-    from app.utils import CACHE
     from app.utils import get_cg
-    from app.utils import preload_datasets
-
-    preload_datasets(glob_path=TEST_DATASETS_WRONG_PATH)
 
     with raises(Exception):
         get_cg("test_graph1")
