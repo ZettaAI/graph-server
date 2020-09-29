@@ -123,8 +123,8 @@ def create_graphs():
 
     config = {
         "data_source": {
-            "EDGES": "gs://graph/test_graph1/edges",
-            "COMPONENTS": "gs://graph/test_graph1/components",
+            "EDGES": "gs://graph/test_graph/edges",
+            "COMPONENTS": "gs://graph/test_graph/components",
             "WATERSHED": "gs://watershed/test_data1",
         },
         "graph_config": {
@@ -149,17 +149,7 @@ def create_graphs():
 
     graphs = []
 
-    graph_id = "test_graph1"
-    meta, _, client_info = bootstrap(graph_id, config=config)
-    graph = ChunkedGraph(graph_id=graph_id, meta=meta, client_info=client_info)
-    graph.mock_edges = Edges([], [])
-    graph.meta._ws_cv = CloudVolumeMock()
-    graph.meta.layer_count = n_layers
-    graph.meta.layer_chunk_bounds = get_layer_chunk_bounds(n_layers, bounds=bounds)
-    graph.create()
-    graphs.append(graph)
-
-    graph_id = "test_graph2"
+    graph_id = "test_graph"
     meta, _, client_info = bootstrap(graph_id, config=config)
     graph = ChunkedGraph(graph_id=graph_id, meta=meta, client_info=client_info)
     graph.mock_edges = Edges([], [])

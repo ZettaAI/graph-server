@@ -1,8 +1,0 @@
-graph_id: test_graph2
-backend_client:
-  TYPE: bigtable
-  CONFIG:
-    ADMIN: false
-    READ_ONLY: false
-    PROJECT: IGNORE_ENVIRONMENT_PROJECT
-    INSTANCE: emulated_instance

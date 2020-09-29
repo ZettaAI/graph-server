@@ -9,12 +9,12 @@ def test_get_l2_chunk_children():
 
     with raises(ChunkedGraphError):
         get_l2_chunk_children(
-            "test_graph1", 120, timestamp=datetime.fromtimestamp(time(), UTC)
+            "test_graph", 120, timestamp=datetime.fromtimestamp(time(), UTC)
         )
 
     with raises(ChunkedGraphError):
         get_l2_chunk_children(
-            "test_graph1",
+            "test_graph",
             120,
             timestamp=datetime.fromtimestamp(time(), UTC),
             flatten=True,

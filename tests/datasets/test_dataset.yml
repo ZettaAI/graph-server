@@ -1,4 +1,4 @@
-graph_id: test_graph1
+graph_id: test_graph
 backend_client:
   TYPE: bigtable
   CONFIG:

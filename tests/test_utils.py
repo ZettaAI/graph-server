@@ -8,19 +8,15 @@ def test_get_datasets():
 
     datasets = get_datasets(TEST_DATASETS_PATH)
 
-    assert len(datasets) == 2
+    assert len(datasets) == 1
     assert type(datasets[0]) == tuple
 
-    dataset1_name, dataset1_clientinfo = datasets[0]
-    dataset2_name, dataset2_clientinfo = datasets[1]
-    assert dataset1_name == "test_graph1"
-    assert dataset2_name == "test_graph2"
+    dataset_name, dataset_clientinfo = datasets[0]
+    assert dataset_name == "test_graph"
 
-    assert dataset1_clientinfo.TYPE == "bigtable"
-    assert dataset1_clientinfo.CONFIG.PROJECT == "IGNORE_ENVIRONMENT_PROJECT"
-
-    assert dataset1_clientinfo.CONFIG.ADMIN == True
-    assert dataset2_clientinfo.CONFIG.ADMIN == False
+    assert dataset_clientinfo.TYPE == "bigtable"
+    assert dataset_clientinfo.CONFIG.PROJECT == "IGNORE_ENVIRONMENT_PROJECT"
+    assert dataset_clientinfo.CONFIG.ADMIN == True
 
 
 def test_get_cg():
@@ -28,7 +24,7 @@ def test_get_cg():
     from app.utils import get_cg
 
     with raises(Exception):
-        get_cg("test_graph1")
+        get_cg("test_graph")
 
 
 def test_string_array():
