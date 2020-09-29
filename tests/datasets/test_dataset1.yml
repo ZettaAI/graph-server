@@ -4,5 +4,5 @@ backend_client:
   CONFIG:
     ADMIN: true
     READ_ONLY: false
-    PROJECT: test_project1
-    INSTANCE: test_instance1
+    PROJECT: IGNORE_ENVIRONMENT_PROJECT
+    INSTANCE: emulated_instance
