@@ -1,13 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .utils import preload_datasets
 from .middleware import ResponseTimeHeader
 from .meshing import api as meshing_api
 from .segmentation import api as segmentation_api
 
 
-preload_datasets()
 app = FastAPI()
 
 
@@ -20,9 +18,16 @@ app.add_middleware(
 )
 app.add_middleware(ResponseTimeHeader)
 
-
 app.mount("/meshing", meshing_api)
 app.mount("/segmentation", segmentation_api)
+
+
+@app.on_event("startup")
+async def startup_event():
+    from .utils import preload_datasets
+
+    print("startup_event")
+    preload_datasets()
 
 
 @app.get("/")

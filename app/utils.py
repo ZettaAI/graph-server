@@ -29,6 +29,7 @@ def get_datasets(glob_path: str) -> List[Tuple[str, BackendClientInfo]]:
             config["backend_client"]["TYPE"],
             CONFIG=BigTableConfig(**config["backend_client"]["CONFIG"]),
         )
+        print(f"found config for {config['graph_id']}")
         datasets.append((config["graph_id"], client_info))
     return datasets
 
@@ -36,6 +37,7 @@ def get_datasets(glob_path: str) -> List[Tuple[str, BackendClientInfo]]:
 def preload_datasets(glob_path: str = DATASETS_PATH) -> None:
     from pychunkedgraph.graph.utils.context_managers import TimeIt
 
+    print(f"loading datasets from {glob_path}")
     for dataset in get_datasets(glob_path):
         graph_id, client_info = dataset
         with TimeIt(f"preloading {graph_id}"):
