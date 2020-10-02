@@ -55,7 +55,9 @@ def get_cg(graph_id: str) -> ChunkedGraph:
     except KeyError:
         pass
     try:
-        cg = ChunkedGraph(graph_id=graph_id, client_info=get_default_client_info())
+        CACHE[graph_id] = ChunkedGraph(
+            graph_id=graph_id, client_info=get_default_client_info()
+        )
     except Exception as e:
         raise ChunkedGraphError(f"Error initializing ChunkedGraph: {str(e)}.")
     return CACHE[graph_id]
