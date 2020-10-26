@@ -1,8 +1,0 @@
-graph_id: test_graph2
-backend_client:
-  TYPE: bigtable
-  CONFIG:
-    ADMIN: false
-    READ_ONLY: false
-    PROJECT: test_project2
-    INSTANCE: test_instance2

@@ -1,6 +1,5 @@
 from typing import Optional
 from typing import Iterable
-from time import time
 from datetime import datetime
 
 from pytz import UTC
@@ -26,14 +25,14 @@ api.include_router(subgraph_router, prefix="/table")
 async def root(
     graph_id: str,
     node_id: int,
-    timestamp: Optional[float] = time(),
+    timestamp: Optional[float] = None,
     stop_layer: Optional[int] = None,
     int64_as_str: Optional[bool] = False,
 ):
     root = get_cg(graph_id).get_root(
         node_id,
         stop_layer=stop_layer,
-        time_stamp=datetime.fromtimestamp(timestamp, UTC),
+        time_stamp=datetime.fromtimestamp(timestamp, UTC) if timestamp else None,
     )
 
     if int64_as_str:
@@ -46,13 +45,15 @@ async def roots(
     graph_id: str,
     node_ids: Iterable[int] = Body(...),
     stop_layer: Optional[int] = None,
-    timestamp: Optional[float] = time(),
+    timestamp: Optional[float] = None,
     int64_as_str: Optional[bool] = False,
 ):
+    from numpy import fromiter
+
     roots = get_cg(graph_id).get_roots(
-        array(node_ids, dtype=uint64),
+        fromiter(node_ids, dtype=uint64),
         stop_layer=stop_layer,
-        time_stamp=datetime.fromtimestamp(timestamp, UTC),
+        time_stamp=datetime.fromtimestamp(timestamp, UTC) if timestamp else None,
     )
 
     if int64_as_str:
@@ -65,7 +66,7 @@ async def roots_binary(
     request: Request,
     graph_id: str,
     stop_layer: Optional[int] = None,
-    timestamp: Optional[float] = time(),
+    timestamp: Optional[float] = None,
 ):
     from numpy import frombuffer
 
@@ -73,14 +74,16 @@ async def roots_binary(
     roots = get_cg(graph_id).get_roots(
         node_ids,
         stop_layer=stop_layer,
-        time_stamp=datetime.fromtimestamp(timestamp, UTC),
+        time_stamp=datetime.fromtimestamp(timestamp, UTC) if timestamp else None,
     )
     return roots.tobytes()
 
 
-@api.post("/table/{graph_id}/node/{node_id}/children")
+@api.get("/table/{graph_id}/node/{node_id}/children")
 async def children(
-    graph_id: str, node_id: int, int64_as_str: Optional[bool] = False,
+    graph_id: str,
+    node_id: int,
+    int64_as_str: Optional[bool] = False,
 ):
     cg = get_cg(graph_id)
     node_id = uint64(node_id)
@@ -90,4 +93,3 @@ async def children(
     if int64_as_str:
         return {"root_ids": string_array(children)}
     return {"root_ids": children}
-

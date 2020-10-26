@@ -12,30 +12,30 @@ router = APIRouter()
 
 
 @router.post("/{graph_id}/merge")
-async def merge(
-    request: Request, graph_id: str, int64_as_str: Optional[bool] = False,
-):
+async def merge(request: Request, graph_id: str, int64_as_str: Optional[bool] = False):
     from .edits_helpers import merge_helper
 
     try:
         result = await merge_helper(copy(get_cg(graph_id)), request)
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
+    except exceptions.ChunkedGraphError as e:
+        raise e
     except Exception as e:
         raise exceptions.InternalServerError(e)
     return format_edit_result(result, int64_as_str)
 
 
 @router.post("/{graph_id}/split")
-async def split(
-    request: Request, graph_id: str, int64_as_str: Optional[bool] = False,
-):
+async def split(request: Request, graph_id: str, int64_as_str: Optional[bool] = False):
     from .edits_helpers import split_helper
 
     try:
         result = await split_helper(copy(get_cg(graph_id)), request)
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
+    except exceptions.ChunkedGraphError as e:
+        raise e
     except Exception as e:
         raise exceptions.InternalServerError(e)
     return format_edit_result(result, int64_as_str)
@@ -43,7 +43,7 @@ async def split(
 
 @router.post("/{graph_id}/graph/split_preview")
 async def split_preview(
-    request: Request, graph_id: str, int64_as_str: Optional[bool] = False,
+    request: Request, graph_id: str, int64_as_str: Optional[bool] = False
 ):
     from .edits_helpers import split_preview_helper
 
@@ -53,36 +53,37 @@ async def split_preview(
         )
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
+    except exceptions.ChunkedGraphError as e:
+        raise e
     except Exception as e:
         raise exceptions.InternalServerError(e)
 
 
 @router.post("/{graph_id}/undo")
-async def undo(
-    request: Request, graph_id: str, int64_as_str: Optional[bool] = False,
-):
+async def undo(request: Request, graph_id: str, int64_as_str: Optional[bool] = False):
     from .edits_helpers import undo_helper
 
     try:
         result = await undo_helper(copy(get_cg(graph_id)), request)
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
+    except exceptions.ChunkedGraphError as e:
+        raise e
     except Exception as e:
         raise exceptions.InternalServerError(e)
     return format_edit_result(result, int64_as_str)
 
 
 @router.post("/{graph_id}/redo")
-async def redo(
-    request: Request, graph_id: str, int64_as_str: Optional[bool] = False,
-):
+async def redo(request: Request, graph_id: str, int64_as_str: Optional[bool] = False):
     from .edits_helpers import redo_helper
 
     try:
         result = await redo_helper(copy(get_cg(graph_id)), request)
     except exceptions.PreconditionError as e:
         raise exceptions.BadRequest(e)
+    except exceptions.ChunkedGraphError as e:
+        raise e
     except Exception as e:
         raise exceptions.InternalServerError(e)
     return format_edit_result(result, int64_as_str)
-

@@ -8,7 +8,7 @@ api = FastAPI()
 async def home():
     from pychunkedgraph import __version__
 
-    return f"Segmentation API: ChunkedGraph Version {__version__}"
+    return {"version": f"ChunkedGraph Segmentation API {__version__}"}
 
 
 @api.get("/table/{graph_id}/info")

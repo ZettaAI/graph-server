@@ -1,0 +1,33 @@
+sudo: true
+services:
+  docker
+
+env:
+  global:
+  - CLOUDSDK_CORE_DISABLE_PROMPTS=1
+
+stages:
+  - test
+python: 3.7
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+
+jobs:
+  include:
+  - stage: test
+    name: "Tests"
+    language: minimal
+    # before_script:
+    #   # request codecov to detect CI environment to pass through to docker
+    #   - ci_env=`bash <(curl -s https://codecov.io/env)`
+
+    script:
+      - openssl aes-256-cbc -K $encrypted_2c5627a708a1_key -iv $encrypted_2c5627a708a1_iv -in key.json.enc -out key.json -d
+      - curl https://sdk.cloud.google.com | bash > /dev/null
+      - source "$HOME/google-cloud-sdk/path.bash.inc"
+      - gcloud auth activate-service-account --key-file=key.json
+      - gcloud auth configure-docker
+      - docker build --tag zetta/graph-server:$TRAVIS_BRANCH . || travis_terminate 1
+      - docker run $ci_env --rm zetta/graph-server:$TRAVIS_BRANCH /bin/sh -c "coverage run --source app -m pytest -x -rxP --durations=10  && coverage report"

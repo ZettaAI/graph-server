@@ -11,7 +11,7 @@ def get_l2_chunk_children(
     from numpy import array
     from numpy import uint64
     from pychunkedgraph.graph.attributes import Hierarchy
-    from ...utils import get_cg
+    from ..utils import get_cg
 
     cg = get_cg(graph_id)
     chunk_id = uint64(chunk_id)
@@ -19,7 +19,7 @@ def get_l2_chunk_children(
     assert chunk_layer == 2, f"Chunk layer must be 2, got {chunk_layer}"
 
     rr_chunk = cg.range_read_chunk(
-        chunk_id, properties=Hierarchy.Child, time_stamp=timestamp,
+        chunk_id, properties=Hierarchy.Child, time_stamp=timestamp
     )
 
     if flatten:

@@ -8,4 +8,4 @@ api = FastAPI()
 async def home():
     from pychunkedgraph import __version__
 
-    return f"Meshing API: ChunkedGraph Version {__version__}"
+    return {"version": f"ChunkedGraph Meshing API {__version__}"}
