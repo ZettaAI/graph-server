@@ -26,7 +26,6 @@ app.mount("/segmentation", segmentation_api)
 async def startup_event():
     from .utils import preload_datasets
 
-    print("startup_event")
     preload_datasets()
 
 
