@@ -69,6 +69,7 @@ async def roots_binary(
     timestamp: Optional[float] = None,
 ):
     from numpy import frombuffer
+    from fastapi import Response
 
     node_ids = frombuffer(await request.body(), uint64)
     roots = get_cg(graph_id).get_roots(
@@ -76,7 +77,7 @@ async def roots_binary(
         stop_layer=stop_layer,
         time_stamp=datetime.fromtimestamp(timestamp, UTC) if timestamp else None,
     )
-    return roots.tobytes()
+    return Response(content=roots.tobytes())
 
 
 @api.get("/table/{graph_id}/node/{node_id}/children")
