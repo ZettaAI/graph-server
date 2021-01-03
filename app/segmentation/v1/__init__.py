@@ -37,7 +37,7 @@ async def root(
 
     if int64_as_str:
         return {"root_id": str(root)}
-    return {"root_id": root}
+    return {"root_id": int(root)}
 
 
 @api.post("/table/{graph_id}/roots")
@@ -58,7 +58,7 @@ async def roots(
 
     if int64_as_str:
         return {"root_ids": string_array(roots)}
-    return {"root_ids": roots}
+    return {"root_ids": roots.tolist()}
 
 
 @api.post("/table/{graph_id}/roots_binary")
@@ -93,4 +93,4 @@ async def children(
         children = cg.get_children(node_id)
     if int64_as_str:
         return {"root_ids": string_array(children)}
-    return {"root_ids": children}
+    return {"root_ids": children.tolist()}

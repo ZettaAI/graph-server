@@ -30,7 +30,7 @@ async def l2_chunk_children(
     if as_array:
         if int64_as_str:
             return {"l2_chunk_children": string_array(children)}
-        return {"l2_chunk_children": children}
+        return {"l2_chunk_children": children.tolist()}
     return {"l2_chunk_children": dumps(children)}
 
 

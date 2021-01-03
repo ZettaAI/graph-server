@@ -26,11 +26,11 @@ async def subgraph(
     if bounds:
         bbox = array([b.split("-") for b in bounds.split("_")], dtype=int).T
     atomic_edges = get_cg(graph_id).get_subgraph(
-        node_id, bbox=bbox, bbox_is_coordinate=True
+        node_id, bbox=bbox, bbox_is_coordinate=True, edges_only=True
     )
     if int64_as_str:
         return {"atomic_edges": string_array(atomic_edges)}
-    return {"atomic_edges": atomic_edges}
+    return {"atomic_edges": atomic_edges.tolist()}
 
 
 @router.get("/{graph_id}/node/{node_id}/leaves")
@@ -48,4 +48,4 @@ async def leaves(
     )
     if int64_as_str:
         return {"leaf_ids": string_array(leaves)}
-    return {"leaf_ids": leaves}
+    return {"leaf_ids": leaves.tolist()}
