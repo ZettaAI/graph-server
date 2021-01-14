@@ -12,6 +12,7 @@ from fastapi import Request
 from .edits import router as edits_router
 from .chunks import router as chunks_router
 from .subgraph import router as subgraph_router
+from .uncategorized import router as uncategorized_router
 from ...utils import get_cg
 from ...utils import string_array
 
@@ -19,6 +20,7 @@ api = FastAPI()
 api.include_router(edits_router, prefix="/table")
 api.include_router(chunks_router, prefix="/table")
 api.include_router(subgraph_router, prefix="/table")
+api.include_router(uncategorized_router, prefix="/table")
 
 
 @api.get("/table/{graph_id}/node/{node_id}/root")
