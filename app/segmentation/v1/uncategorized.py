@@ -1,3 +1,44 @@
+from fastapi import APIRouter
+from ...utils import get_cg
+from .edits_helpers import _process_node_info
+
+router = APIRouter()
+
+
+@router.post("/{graph_id}/graph/find_path")
+async def find_path(
+    request: Request,
+    graph_id: str,
+    int64_as_str: Optional[bool] = False,
+    precision_mode: Optional[bool] = True,
+):
+    from pychunkedgraph.graph.analysis import pathing
+    from pychunkedgraph.meshing import mesh_analysis
+
+    cg = copy(get_cg(graph_id))
+    nodes = loads(await request.body())
+    assert len(nodes) == 2
+    supervoxel_ids, _ = _process_node_info(cg, nodes)
+    source_sv_id = supervoxel_ids[0]
+    target_sv_id = supervoxel_ids[1]
+    source_l2_id = cg.get_parent(source_supervoxel_id)
+    target_l2_id = cg.get_parent(target_supervoxel_id)
+
+    l2_path = pathing.find_l2_shortest_path(cg, source_l2_id, target_l2_id)
+    if precision_mode:
+        centroids, failed_l2_ids = mesh_analysis.compute_mesh_centroids_of_l2_ids(
+            cg, l2_path, flatten=True
+        )
+        return {
+            "centroids_list": centroids,
+            "failed_l2_ids": failed_l2_ids,
+            "l2_path": l2_path,
+        }
+    else:
+        centroids = pathing.compute_rough_coordinate_path(cg, l2_path)
+        return {"centroids_list": centroids, "failed_l2_ids": [], "l2_path": l2_path}
+
+
 # ### CONTACT SITES --------------------------------------------------------------
 
 
