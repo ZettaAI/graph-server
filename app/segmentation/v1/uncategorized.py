@@ -44,7 +44,6 @@ async def find_path(
             centroids[i] = centroids[i].tolist()
         if int64_as_str:
             failed_l2_ids = string_array(failed_l2_ids)
-        print(centroids)
         return {
             "centroids_list": centroids,
             "failed_l2_ids": failed_l2_ids,
