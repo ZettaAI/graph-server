@@ -1,2 +1,2 @@
 fastapi
-git+https://github.com/seung-lab/PyChunkedGraph.git@akhilesh-unit-tests#egg=pychunkedgraph
+# git+https://github.com/seung-lab/PyChunkedGraph.git@akhilesh-unit-tests

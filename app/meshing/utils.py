@@ -100,6 +100,7 @@ def remesh(cg: ChunkedGraph, operation_id: int, l2ids: ndarray):
         cg, operation_id
     )
 
+    print(f"starting remesh job for {operation_id} with {l2ids}")
     remeshing(
         cg,
         l2ids,
@@ -111,6 +112,7 @@ def remesh(cg: ChunkedGraph, operation_id: int, l2ids: ndarray):
     )
     with Storage(bucket_path) as storage:  # pylint: disable=not-context-manager
         storage.delete_file(file_name)
+    print(f"remesh job for {operation_id} with {l2ids} complete")
 
 
 def _get_pending_tasks(pending_path: str) -> list:
@@ -135,6 +137,7 @@ def remesh_pending(cg: ChunkedGraph):
     pending_path = f"{unsharded_mesh_path}/in-progress"
     for task in _get_pending_tasks(pending_path):
         fname, l2ids = task
+        print(f"remeshing IDs {l2ids} from {fname}")
         remeshing(
             cg,
             l2ids,
@@ -147,3 +150,4 @@ def remesh_pending(cg: ChunkedGraph):
 
         with Storage(pending_path) as storage:  # pylint: disable=not-context-manager
             storage.delete_file(fname)
+        print(f"remesh job for {fname} with {l2ids} complete")
