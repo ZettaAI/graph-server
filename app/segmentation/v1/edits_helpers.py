@@ -54,7 +54,9 @@ async def _remesh(cg: ChunkedGraph, operation_id: int, l2ids: Iterable) -> None:
             data=dumps({"operation_id": int(operation_id), "l2ids": l2ids}),
             timeout=0.1,
         )
+        print(f"remesh job sent to {remesh_svc}")
     except ReadTimeout:
+        print(f"error contacting {remesh_svc}")
         pass
 
 
