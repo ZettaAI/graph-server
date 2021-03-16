@@ -17,10 +17,8 @@ async def merge(request: Request, graph_id: str, int64_as_str: Optional[bool] = 
 
     try:
         result = await merge_helper(copy(get_cg(graph_id)), request)
-    except exceptions.PreconditionError as e:
+    except (exceptions.PreconditionError, exceptions.ChunkedGraphError) as e:
         raise exceptions.BadRequest(e)
-    except exceptions.ChunkedGraphError as e:
-        raise e
     except Exception as e:
         raise exceptions.InternalServerError(e)
     return format_edit_result(result, int64_as_str)
@@ -32,10 +30,8 @@ async def split(request: Request, graph_id: str, int64_as_str: Optional[bool] = 
 
     try:
         result = await split_helper(copy(get_cg(graph_id)), request)
-    except exceptions.PreconditionError as e:
+    except (exceptions.PreconditionError, exceptions.ChunkedGraphError) as e:
         raise exceptions.BadRequest(e)
-    except exceptions.ChunkedGraphError as e:
-        raise e
     except Exception as e:
         raise exceptions.InternalServerError(e)
     return format_edit_result(result, int64_as_str)
@@ -51,10 +47,8 @@ async def split_preview(
         return await split_preview_helper(
             copy(get_cg(graph_id)), request, int64_as_str=int64_as_str
         )
-    except exceptions.PreconditionError as e:
+    except (exceptions.PreconditionError, exceptions.ChunkedGraphError) as e:
         raise exceptions.BadRequest(e)
-    except exceptions.ChunkedGraphError as e:
-        raise e
     except Exception as e:
         raise exceptions.InternalServerError(e)
 
@@ -65,10 +59,8 @@ async def undo(request: Request, graph_id: str, int64_as_str: Optional[bool] = F
 
     try:
         result = await undo_helper(copy(get_cg(graph_id)), request)
-    except exceptions.PreconditionError as e:
+    except (exceptions.PreconditionError, exceptions.ChunkedGraphError) as e:
         raise exceptions.BadRequest(e)
-    except exceptions.ChunkedGraphError as e:
-        raise e
     except Exception as e:
         raise exceptions.InternalServerError(e)
     return format_edit_result(result, int64_as_str)
@@ -80,10 +72,8 @@ async def redo(request: Request, graph_id: str, int64_as_str: Optional[bool] = F
 
     try:
         result = await redo_helper(copy(get_cg(graph_id)), request)
-    except exceptions.PreconditionError as e:
+    except (exceptions.PreconditionError, exceptions.ChunkedGraphError) as e:
         raise exceptions.BadRequest(e)
-    except exceptions.ChunkedGraphError as e:
-        raise e
     except Exception as e:
         raise exceptions.InternalServerError(e)
     return format_edit_result(result, int64_as_str)
