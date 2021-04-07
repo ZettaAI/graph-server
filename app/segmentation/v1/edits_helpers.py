@@ -139,7 +139,9 @@ async def split_preview_helper(
 
     if int64_as_str:
         return {
-            "supervoxel_connected_components": string_array(supervoxel_ccs),
+            "supervoxel_connected_components": [
+                string_array(cc) for cc in supervoxel_ccs
+            ],
             "illegal_split": illegal_split,
         }
     return {
