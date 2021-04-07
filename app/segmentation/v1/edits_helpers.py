@@ -40,24 +40,26 @@ async def _remesh(cg: ChunkedGraph, operation_id: int, l2ids: Iterable) -> None:
     from json import dumps
     from requests import post
     from requests.exceptions import ReadTimeout
+    from pychunkedgraph.graph.utils.context_managers import TimeIt
     from ...meshing.utils import record_remesh_ids
 
     # log operations that need remeshed, in case the remesh service is unreachable
     # these are deleted when the remeshing is successful.
-    record_remesh_ids(cg, operation_id, array(l2ids, dtype=uint64))
+    # record_remesh_ids(cg, operation_id, array(l2ids, dtype=uint64))
+    remesh_svc = environ.get("REMESH_SERVICE", "http://localhost:2000")
 
-    try:
-        remesh_svc = environ.get("REMESH_SERVICE", "http://localhost:2000")
-        # trigger re-mesh task, no need to wait for response
-        post(
-            f"{remesh_svc}/meshing/api/v1/table/{cg.graph_id}/remesh",
-            data=dumps({"operation_id": int(operation_id), "l2ids": l2ids}),
-            timeout=0.1,
-        )
-        print(f"remesh job sent to {remesh_svc}")
-    except ReadTimeout:
-        print(f"error contacting {remesh_svc}")
-        pass
+    with TimeIt(f"trigger remesh for {operation_id} at {remesh_svc}"):
+        try:
+            # trigger re-mesh task, no need to wait for response
+            post(
+                f"{remesh_svc}/meshing/api/v1/table/{cg.graph_id}/remesh",
+                data=dumps({"operation_id": int(operation_id), "l2ids": l2ids}),
+                timeout=1,
+            )
+            print(f"remesh job sent to {remesh_svc}")
+        except ReadTimeout as err:
+            print(f"error contacting {remesh_svc}: {err}")
+            pass
 
 
 async def merge_helper(cg: ChunkedGraph, request: Request):
@@ -137,7 +139,9 @@ async def split_preview_helper(
 
     if int64_as_str:
         return {
-            "supervoxel_connected_components": string_array(supervoxel_ccs),
+            "supervoxel_connected_components": [
+                string_array(cc) for cc in supervoxel_ccs
+            ],
             "illegal_split": illegal_split,
         }
     return {
