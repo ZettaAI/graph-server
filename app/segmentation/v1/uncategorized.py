@@ -11,51 +11,6 @@ from .edits_helpers import _process_node_info
 router = APIRouter()
 
 
-@router.post("/{graph_id}/graph/find_path")
-async def find_path(
-    request: Request,
-    graph_id: str,
-    int64_as_str: Optional[bool] = False,
-    precision_mode: Optional[bool] = True,
-):
-    from ...utils import string_array
-    from pychunkedgraph.graph.analysis import pathing
-    from pychunkedgraph.meshing import mesh_analysis
-
-    cg = copy(get_cg(graph_id))
-    nodes = loads(await request.body())
-    assert len(nodes) == 2
-    supervoxel_ids, _ = _process_node_info(cg, nodes)
-    source_supervoxel_id = supervoxel_ids[0]
-    target_supervoxel_id = supervoxel_ids[1]
-    source_l2_id = cg.get_parent(source_supervoxel_id)
-    target_l2_id = cg.get_parent(target_supervoxel_id)
-
-    l2_path = pathing.find_l2_shortest_path(cg, source_l2_id, target_l2_id)
-    if int64_as_str:
-        l2_path = string_array(l2_path)
-    else:
-        l2_path = l2_path.tolist()
-    if precision_mode:
-        centroids, failed_l2_ids = mesh_analysis.compute_mesh_centroids_of_l2_ids(
-            cg, l2_path, flatten=True
-        )
-        for i in range(len(centroids)):
-            centroids[i] = centroids[i].tolist()
-        if int64_as_str:
-            failed_l2_ids = string_array(failed_l2_ids)
-        return {
-            "centroids_list": centroids,
-            "failed_l2_ids": failed_l2_ids,
-            "l2_path": l2_path,
-        }
-    else:
-        centroids = pathing.compute_rough_coordinate_path(cg, l2_path)
-        for i in range(len(centroids)):
-            centroids[i] = centroids[i].tolist()
-        return {"centroids_list": centroids, "failed_l2_ids": [], "l2_path": l2_path}
-
-
 # ### CONTACT SITES --------------------------------------------------------------
 
 
@@ -86,17 +41,6 @@ async def find_path(
 #     }
 #     return jsonify_with_kwargs(resp, int64_as_str=int64_as_str)
 
-# ### FIND PATH ------------------------------------------------------------------
-
-
-# @bp.route("/table/<table_id>/graph/find_path", methods=["POST"])
-# @auth_requires_permission("view")
-# def find_path(table_id):
-#     int64_as_str = request.args.get("int64_as_str", default=False, type=toboolean)
-#     precision_mode = request.args.get("precision_mode", default=True, type=toboolean)
-#     find_path_result = common.handle_find_path(table_id, precision_mode)
-#     return jsonify_with_kwargs(find_path_result, int64_as_str=int64_as_str)
-
 
 # ### IS LATEST ROOTS --------------------------------------------------------------
 
@@ -117,4 +61,23 @@ async def find_path(
 # def handle_roots_from_coords(table_id):
 #     int64_as_str = request.args.get("int64_as_str", default=False, type=toboolean)
 #     resp = common.handle_roots_from_coord(table_id)
+#     return jsonify_with_kwargs(resp, int64_as_str=int64_as_str)
+
+
+# ## Get level2 graph -------------------------------------------------------------
+# @bp.route("/table/<table_id>/node/<node_id>/lvl2_graph", methods=["GET"])
+# @auth_requires_permission("view")
+# def handle_get_lvl2_graph(table_id, node_id):
+#     int64_as_str = request.args.get("int64_as_str", default=False, type=toboolean)
+#     resp = common.handle_get_layer2_graph(table_id, node_id)
+#     return jsonify_with_kwargs(resp, int64_as_str=int64_as_str)
+
+
+# ### GET OPERATION DETAILS --------------------------------------------------------
+
+# @bp.route("/table/<table_id>/operation_details", methods=["GET"])
+# @auth_requires_permission("view")
+# def operation_details(table_id):
+#     int64_as_str = request.args.get("int64_as_str", default=False, type=toboolean)
+#     resp = common.operation_details(table_id)
 #     return jsonify_with_kwargs(resp, int64_as_str=int64_as_str)

@@ -49,3 +49,12 @@ async def leaves(
     if int64_as_str:
         return {"leaf_ids": string_array(leaves)}
     return {"leaf_ids": leaves.tolist()}
+
+
+# @bp.route("/table/<table_id>/node/leaves_many", methods=["POST"])
+# @auth_requires_permission("view")
+# def handle_leaves_many(table_id):
+#     int64_as_str = request.args.get("int64_as_str", default=False, type=toboolean)
+#     resp = {"root_to_leaves_mapping": common.handle_leaves_many(table_id)}
+#     return jsonify_with_kwargs(resp, int64_as_str=int64_as_str)
+
