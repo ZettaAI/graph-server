@@ -5,8 +5,8 @@ Leaves and edges of an agglomeration, within (optional) bounding box.
 from typing import Optional
 
 from numpy import array
+from fastapi import Request
 from fastapi import APIRouter
-
 
 from ...utils import get_cg
 from ...utils import string_array
@@ -51,10 +51,38 @@ async def leaves(
     return {"leaf_ids": leaves.tolist()}
 
 
-# @bp.route("/table/<table_id>/node/leaves_many", methods=["POST"])
-# @auth_requires_permission("view")
-# def handle_leaves_many(table_id):
-#     int64_as_str = request.args.get("int64_as_str", default=False, type=toboolean)
-#     resp = {"root_to_leaves_mapping": common.handle_leaves_many(table_id)}
-#     return jsonify_with_kwargs(resp, int64_as_str=int64_as_str)
+@router.get("/{graph_id}/node/{node_id}/leaves_many")
+async def leaves_many(
+    request: Request,
+    graph_id: str,
+    bounds: Optional[str] = "",
+    int64_as_str: Optional[bool] = False,
+):
+    from numpy import uint64
+    from numpy import frombuffer
 
+    bbox = None
+    if bounds:
+        bbox = array([b.split("-") for b in bounds.split("_")], dtype=int).T
+    root_ids = frombuffer(await request.body(), uint64)
+    root_to_leaves_mapping = get_cg(graph_id).get_subgraph_nodes(
+        root_ids,
+        bbox=bbox,
+        bbox_is_coordinate=True,
+        return_layers=[1],
+        serializable=True,
+    )
+    return {"root_to_leaves_mapping": root_to_leaves_mapping}
+
+
+@router.get("/{graph_id}/node/{node_id}/lvl2_graph")
+async def lvl2_graph(
+    graph_id: str,
+    node_id: int,
+    int64_as_str: Optional[bool] = False,
+):
+    from pychunkedgraph.graph.analysis.pathing import get_lvl2_edge_list
+
+    return {
+        "edge_graph": string_array(get_lvl2_edge_list(get_cg(graph_id), int(node_id)))
+    }
