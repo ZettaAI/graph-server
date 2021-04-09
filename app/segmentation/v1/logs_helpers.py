@@ -27,6 +27,16 @@ class LogEntryWrapper:
             yield attr
 
 
+def get_change_log(
+    graph_id: str, start_time: float = None, end_time: float = None
+) -> segmenthistory.SegmentHistory:
+    from pytz import UTC
+
+    start_time = datetime.fromtimestamp(start_time, UTC) if start_time else None
+    end_time = datetime.fromtimestamp(end_time, UTC) if end_time else None
+    return _read_log_entries(get_cg(graph_id), start_time, end_time)
+
+
 def _read_log_entries(
     cg: ChunkedGraph,
     start_time: datetime,
@@ -41,18 +51,6 @@ def _read_log_entries(
         except KeyError:
             continue
     return log_entries
-
-
-def get_change_log(
-    graph_id: str,
-    root_id: int = None,
-    start_time: datetime = None,
-    end_time: datetime = None,
-) -> segmenthistory.SegmentHistory:
-    cg = get_cg(graph_id)
-    if not root_id:
-        return _read_log_entries(cg, start_time, end_time)
-    return segmenthistory.SegmentHistory(cg, int(root_id)).change_log()
 
 
 def operation_details(graph_id: str, operation_ids: list) -> dict:
