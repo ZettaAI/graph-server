@@ -5,22 +5,28 @@ from datetime import datetime
 from pytz import UTC
 from numpy import array
 from numpy import uint64
+from numpy import frombuffer
 from fastapi import Body
 from fastapi import FastAPI
 from fastapi import Request
 
+from .logs import router as logs_router
+from .path import router as path_router
 from .edits import router as edits_router
 from .chunks import router as chunks_router
 from .subgraph import router as subgraph_router
-from .uncategorized import router as uncategorized_router
+from .contact_sites import router as contact_sites_router
+
 from ...utils import get_cg
 from ...utils import string_array
 
 api = FastAPI()
+api.include_router(logs_router, prefix="/table")
+api.include_router(path_router, prefix="/table")
 api.include_router(edits_router, prefix="/table")
 api.include_router(chunks_router, prefix="/table")
 api.include_router(subgraph_router, prefix="/table")
-api.include_router(uncategorized_router, prefix="/table")
+api.include_router(contact_sites_router, prefix="/table")
 
 
 @api.get("/table/{graph_id}/node/{node_id}/root")
@@ -70,7 +76,6 @@ async def roots_binary(
     stop_layer: Optional[int] = None,
     timestamp: Optional[float] = None,
 ):
-    from numpy import frombuffer
     from fastapi import Response
 
     node_ids = frombuffer(await request.body(), uint64)
@@ -80,6 +85,20 @@ async def roots_binary(
         time_stamp=datetime.fromtimestamp(timestamp, UTC) if timestamp else None,
     )
     return Response(content=roots.tobytes())
+
+
+@api.post("/table/{graph_id}/is_latest_roots")
+async def is_latest_roots(request: Request, graph_id: str):
+    from json import loads
+
+    from numpy import isin
+    from pychunkedgraph.graph.attributes import Hierarchy
+
+    node_ids = frombuffer(await request.body(), uint64)
+    rows_d = get_cg(graph_id).client.read_nodes(
+        node_ids=node_ids, columns=Hierarchy.NewParent
+    )
+    return ~isin(node_ids, list(rows_d.keys()))
 
 
 @api.get("/table/{graph_id}/node/{node_id}/children")
