@@ -51,28 +51,35 @@ async def leaves(
     return {"leaf_ids": leaves.tolist()}
 
 
-@router.get("/{graph_id}/node/{node_id}/leaves_many")
+@router.post("/{graph_id}/leaves_many")
 async def leaves_many(
     request: Request,
     graph_id: str,
     bounds: Optional[str] = "",
     int64_as_str: Optional[bool] = False,
+    stop_layer: Optional[int] = 1
 ):
     from numpy import uint64
-    from numpy import frombuffer
 
     bbox = None
     if bounds:
         bbox = array([b.split("-") for b in bounds.split("_")], dtype=int).T
-    root_ids = frombuffer(await request.body(), uint64)
+    json_obj = await request.json()
+    root_ids = array(json_obj['node_ids'], dtype=uint64)
     root_to_leaves_mapping = get_cg(graph_id).get_subgraph_nodes(
         root_ids,
         bbox=bbox,
         bbox_is_coordinate=True,
-        return_layers=[1],
+        return_layers=[stop_layer],
         serializable=True,
+        return_flattened=True
     )
-    return {"root_to_leaves_mapping": root_to_leaves_mapping}
+    if int64_as_str:
+        str_dict = {}
+        for root_id, children in root_to_leaves_mapping.items():
+            str_dict[root_id] = string_array(children)
+        return str_dict
+    return root_to_leaves_mapping
 
 
 @router.get("/{graph_id}/node/{node_id}/lvl2_graph")
